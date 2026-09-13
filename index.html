@@ -431,11 +431,14 @@
     font-family: inherit;
   }
   
+  /* ===== CHI PHÍ - ĐÃ SỬA ĐỂ KHÔNG TRÀN NGANG ===== */
   .item-row {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
     padding: 6px 0;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .item-row input {
@@ -445,10 +448,21 @@
     font-size: 14px;
     background: #FFFDE7;
     font-family: inherit;
+    min-width: 0;
+    box-sizing: border-box;
   }
   
-  .item-row input.name { flex: 2; text-align: left; }
-  .item-row input.num { flex: 1; text-align: right; }
+  .item-row input.name { 
+    flex: 1 1 55%; 
+    text-align: left; 
+    width: 55%;
+  }
+  
+  .item-row input.num { 
+    flex: 1 1 35%; 
+    text-align: right; 
+    width: 35%;
+  }
   
   .item-row .remove {
     background: #FFCDD2;
@@ -459,7 +473,7 @@
     color: #C62828;
     cursor: pointer;
     font-size: 14px;
-    flex-shrink: 0;
+    flex: 0 0 32px;
   }
   
   .item-row .remove:disabled {
@@ -545,6 +559,25 @@
     .weekdays div { font-size: 8px; }
     .day .num { font-size: 14px; }
     body { padding: 70px 8px 80px; }
+    
+    /* Form chi phí nhỏ hơn cho iPhone SE */
+    .item-row input {
+      font-size: 13px;
+      padding: 7px 6px;
+    }
+    .item-row input.name { flex: 1 1 50%; width: 50%; }
+    .item-row input.num { flex: 1 1 35%; width: 35%; }
+    .item-row .remove { flex: 0 0 28px; width: 28px; height: 28px; font-size: 12px; }
+    
+    /* Form nhập liệu tổng quát */
+    .row input {
+      width: 90px;
+      font-size: 15px;
+    }
+    .row .unit {
+      width: 36px;
+      font-size: 12px;
+    }
   }
 </style>
 </head>
@@ -553,7 +586,6 @@
 <div id="pets-layer"></div>
 
 <div class="calendar-card">
-  <!-- HEADER: nút ‹ bên trái | ô đỏ ở giữa | nút › bên phải -->
   <div class="cal-header">
     <button class="nav-btn prev" onclick="changeMonth(-1)" aria-label="Tháng trước">‹</button>
     <div class="cal-year-badge" id="yearBadge">9/2026</div>
@@ -988,7 +1020,7 @@ function showMonthSummary() {
 
 function closeMonthModal() { document.getElementById('monthModal').classList.remove('active'); }
 
-// ============ RANDOM CÁC CON VẬT (Poisson + tách cặp) ============
+// ============ RANDOM CÁC CON VẬT ============
 const PETS = ['pet1.png', 'pet2.png', 'pet3.png', 'pet4.png', 'pet5.png', 'pet6.png'];
 
 function renderPets() {
@@ -1001,12 +1033,14 @@ function renderPets() {
   // Cấu hình theo màn hình
   let petCount, petSize, minDist, allowOverlap;
   if (w < 400) {
-    petCount = 4; petSize = 45; minDist = 15; allowOverlap = true;
+    // iPhone SE: 6 con (không lặp), nhỏ, cho đè nhẹ mép lịch
+    petCount = 6; petSize = 40; minDist = 10; allowOverlap = true;
   } else if (w < 600) {
     petCount = 8; petSize = 90; minDist = 20; allowOverlap = false;
   } else if (w < 1024) {
     petCount = 10; petSize = 140; minDist = 30; allowOverlap = false;
   } else {
+    // Máy tính: 12 con (6 hình × 2 lần), to
     petCount = 12; petSize = 200; minDist = 40; allowOverlap = false;
   }
   
@@ -1042,10 +1076,15 @@ function renderPets() {
     return false;
   }
   
-  // Danh sách: 6 con × 2 lần
+  // Tạo danh sách: nếu petCount ≤ 6 → mỗi con 1 lần (không lặp)
+  // Nếu petCount > 6 → mỗi con 2 lần
   let list = [];
-  for (let i = 0; i < 2; i++) {
-    PETS.forEach(p => list.push(p));
+  if (petCount <= 6) {
+    list = [...PETS]; // 6 con, mỗi con 1 lần
+  } else {
+    for (let i = 0; i < 2; i++) {
+      PETS.forEach(p => list.push(p));
+    }
   }
   list = list.slice(0, petCount);
   
