@@ -1,11 +1,12 @@
 // ============ CẤU HÌNH FIREBASE ============
-const FIREBASE_CONFIG = {
-  apiKey: "PASTE_API_KEY_VÀO_ĐÂY",
+const firebaseConfig = {
+  apiKey: "AIzaSyDNZCSt6NgALoJo-7um-LAPjSzeGvK0KIE",
   authDomain: "tiem-banh-mi-42883.firebaseapp.com",
   projectId: "tiem-banh-mi-42883",
-  storageBucket: "tiem-banh-mi-42883.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID_VÀO_ĐÂY",
-  appId: "PASTE_APP_ID_VÀO_ĐÂY"
+  storageBucket: "tiem-banh-mi-42883.firebasestorage.app",
+  messagingSenderId: "468927428542",
+  appId: "1:468927428542:web:18c61cf7edf2a09d9babef",
+  measurementId: "G-HEYW9LZHH9"
 };
 
 // Load Firebase SDK
