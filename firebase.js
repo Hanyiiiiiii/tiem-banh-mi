@@ -1,14 +1,12 @@
 // ============ CẤU HÌNH FIREBASE ============
-// Bạn sẽ thay các giá trị này sau khi tạo Firebase project
-// Hướng dẫn chi tiết sẽ có ở tin sau
-const firebaseConfig = {
-  apiKey: "AIzaSyDNZCSt6NgALoJo-7um-LAPjSzeGvK0KIE",
+const FIREBASE_CONFIG = {
+  apiKey: "PASTE_API_KEY_VÀO_ĐÂY",
   authDomain: "tiem-banh-mi-42883.firebaseapp.com",
   projectId: "tiem-banh-mi-42883",
-  storageBucket: "tiem-banh-mi-42883.firebasestorage.app",
-  messagingSenderId: "468927428542",
-  appId: "1:468927428542:web:18c61cf7edf2a09d9babef",
-  measurementId: "G-HEYW9LZHH9"
+  storageBucket: "tiem-banh-mi-42883.appspot.com",
+  messagingSenderId: "PASTE_SENDER_ID_VÀO_ĐÂY",
+  appId: "PASTE_APP_ID_VÀO_ĐÂY"
+};
 
 // Load Firebase SDK
 const firebaseScripts = [
@@ -16,20 +14,15 @@ const firebaseScripts = [
   "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"
 ];
 
-// Biến toàn cục
 let firebaseApp = null;
 let firestore = null;
 let firebaseReady = false;
 
-// Khởi tạo Firebase
 async function initFirebase() {
   try {
-    // Load scripts
     for (const src of firebaseScripts) {
       await loadScript(src);
     }
-    
-    // Khởi tạo
     firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
     firestore = firebase.firestore();
     firebaseReady = true;
@@ -42,7 +35,6 @@ async function initFirebase() {
   }
 }
 
-// Helper load script
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -53,12 +45,10 @@ function loadScript(src) {
   });
 }
 
-// Lưu 1 ngày lên Firebase
 async function saveToFirebase(dateKey, dayData) {
   if (!firebaseReady) {
     throw new Error('Firebase chưa sẵn sàng');
   }
-  
   try {
     await firestore.collection('doanhthu').doc(dateKey).set({
       ...dayData,
@@ -72,10 +62,8 @@ async function saveToFirebase(dateKey, dayData) {
   }
 }
 
-// Đọc tất cả dữ liệu từ Firebase
 async function loadFromFirebase() {
   if (!firebaseReady) return null;
-  
   try {
     const snapshot = await firestore.collection('doanhthu').get();
     const result = {};
@@ -90,10 +78,8 @@ async function loadFromFirebase() {
   }
 }
 
-// Lắng nghe thay đổi realtime (cả nhà cùng xem)
 function listenFirebase(callback) {
   if (!firebaseReady) return;
-  
   firestore.collection('doanhthu').onSnapshot(snapshot => {
     const result = {};
     snapshot.forEach(doc => {
