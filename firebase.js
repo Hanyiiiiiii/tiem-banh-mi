@@ -1,13 +1,14 @@
 // ============ CẤU HÌNH FIREBASE ============
 // Bạn sẽ thay các giá trị này sau khi tạo Firebase project
 // Hướng dẫn chi tiết sẽ có ở tin sau
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  authDomain: "tiem-banh-mi-saigon.firebaseapp.com",
-  projectId: "tiem-banh-mi-saigon",
-  storageBucket: "tiem-banh-mi-saigon.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef123456"
+const firebaseConfig = {
+  apiKey: "AIzaSyDNZCSt6NgALoJo-7um-LAPjSzeGvK0KIE",
+  authDomain: "tiem-banh-mi-42883.firebaseapp.com",
+  projectId: "tiem-banh-mi-42883",
+  storageBucket: "tiem-banh-mi-42883.firebasestorage.app",
+  messagingSenderId: "468927428542",
+  appId: "1:468927428542:web:18c61cf7edf2a09d9babef",
+  measurementId: "G-HEYW9LZHH9"
 };
 
 // Load Firebase SDK
