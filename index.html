@@ -100,12 +100,13 @@
   
   /* ===== HEADER: nút ‹ | ô đỏ | nút › ===== */
   .cal-header {
-    display: grid;
-    grid-template-columns: 60px 1fr 60px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
     position: relative;
     min-height: 60px;
+    padding: 0 4px;
   }
   
   .nav-btn {
@@ -126,15 +127,12 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    z-index: 3;
+    z-index: 10;
     position: relative;
   }
   
   .nav-btn:hover { color: #E60000; }
   .nav-btn:active { transform: scale(0.85); background: rgba(0,0,0,0.05); }
-  
-  .nav-btn.prev { justify-self: start; margin-left: 4px; }
-  .nav-btn.next { justify-self: end; margin-right: 4px; }
   
   .cal-year-badge {
     background: #E60000;
@@ -153,7 +151,7 @@
     top: -50px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 2;
+    z-index: 1;
     pointer-events: none;
   }
   
@@ -400,7 +398,7 @@
     box-sizing: border-box;
   }
   
-  /* ===== FORM CHI PHÍ (đã sửa tràn ngang) ===== */
+  /* ===== FORM CHI PHÍ ===== */
   .item-row {
     display: flex;
     gap: 6px;
@@ -522,14 +520,12 @@
   
   @media (max-width: 380px) {
     .calendar-card { padding: 20px 14px 16px; }
-    .cal-header { grid-template-columns: 50px 1fr 50px; }
     .nav-btn { font-size: 30px; width: 40px; height: 40px; }
     .cal-year-badge { width: 88px; height: 88px; font-size: 19px; top: -44px; }
     .weekdays div { font-size: 8px; }
     .day .num { font-size: 14px; }
     body { padding: 70px 8px 80px; }
     
-    /* Form chi phí nhỏ hơn */
     .item-row input {
       font-size: 13px;
       padding: 7px 6px;
@@ -538,7 +534,6 @@
     .item-row input.num { flex: 1 1 35%; width: 35%; }
     .item-row .remove { flex: 0 0 28px; width: 28px; height: 28px; }
     
-    /* Form nhập liệu tổng quát */
     .row input {
       width: 90px;
       font-size: 15px;
@@ -741,20 +736,17 @@ function openDayModal(key) {
   
   const hasData = !isDayEmpty(currentDayData);
   
-  // Nếu ngày đã có dữ liệu → mở chế độ XEM (chỉ hiện số liệu)
-  // Nếu ngày trống → mở chế độ SỬA (hiện form)
   if (hasData) {
     isEditMode = false;
-    renderDayView();  // ← HIỆN DỮ LIỆU DẠNG BẢNG
+    renderDayView();
   } else {
     isEditMode = true;
-    renderDayForm();  // ← HIỆN FORM NHẬP LIỆU
+    renderDayForm();
   }
   
   document.getElementById('dayModal').classList.add('active');
 }
 
-// ⭐ HÀM MỚI: Hiển thị dữ liệu dạng bảng (chế độ XEM)
 function renderDayView() {
   const r = currentDayData;
   const banhE = (r.tonDau + r.nhapMoi) - r.tongBanhBan;
@@ -797,12 +789,10 @@ function renderDayView() {
   
   document.getElementById('dayContent').innerHTML = html;
   
-  // Hiện nút Sửa
   document.getElementById('editButtonArea').innerHTML = 
     `<button class="btn-edit" onclick="enableEditMode()">✏️ Sửa</button>`;
 }
 
-// ⭐ HÀM CŨ: Hiển thị form nhập liệu (chế độ SỬA)
 function renderDayForm() {
   const r = currentDayData;
   const dis = '';
@@ -878,7 +868,6 @@ function renderDayForm() {
     input.addEventListener('blur', onFormInput);
   });
   
-  // Ẩn nút Sửa (vì đang trong chế độ sửa)
   document.getElementById('editButtonArea').innerHTML = '';
   
   recalc();
@@ -1037,7 +1026,7 @@ function showMonthSummary() {
 
 function closeMonthModal() { document.getElementById('monthModal').classList.remove('active'); }
 
-// ============ RANDOM CÁC CON VẬT (Poisson + tách cặp) ============
+// ============ RANDOM CÁC CON VẬT ============
 const PETS = ['pet1.png', 'pet2.png', 'pet3.png', 'pet4.png', 'pet5.png', 'pet6.png'];
 
 function renderPets() {
@@ -1047,7 +1036,6 @@ function renderPets() {
   const w = window.innerWidth;
   const h = window.innerHeight;
   
-  // Cấu hình theo màn hình
   let petCount, petSize, minDist, allowOverlap;
   if (w < 400) {
     petCount = 6; petSize = 40; minDist = 10; allowOverlap = true;
@@ -1059,7 +1047,6 @@ function renderPets() {
     petCount = 12; petSize = 200; minDist = 40; allowOverlap = false;
   }
   
-  // Vùng cấm (lịch ở giữa)
   const calendarWidth = Math.min(420, w - 24);
   const calendarHeight = 500;
   const calendarLeft = (w - calendarWidth) / 2;
@@ -1091,9 +1078,6 @@ function renderPets() {
     return false;
   }
   
-  // Danh sách
-  // Nếu petCount ≤ 6: mỗi con 1 lần (không lặp)
-  // Nếu petCount > 6: mỗi con 2 lần
   let list = [];
   if (petCount <= 6) {
     list = [...PETS];
