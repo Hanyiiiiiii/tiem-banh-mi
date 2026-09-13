@@ -1,7 +1,7 @@
 // ============ CẤU HÌNH GOOGLE SHEETS ============
 // Bạn sẽ thay URL này sau khi tạo Apps Script
 // Hướng dẫn chi tiết sẽ có ở tin sau
-const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec";
+const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbyQEBuOHaMxBW4IZrD9ySnd2ggZXAtrwYNmiNow_wYzMWUvulfNj4cgESiDV4A40UjxFg/exec";
 
 // Hàng đợi ghi Sheets (tránh ghi quá nhiều lần)
 let sheetsQueue = [];
