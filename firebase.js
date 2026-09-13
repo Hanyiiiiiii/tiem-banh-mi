@@ -1,5 +1,5 @@
 // ============ CẤU HÌNH FIREBASE ============
-const firebaseConfig = {
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDNZCSt6NgALoJo-7um-LAPjSzeGvK0KIE",
   authDomain: "tiem-banh-mi-42883.firebaseapp.com",
   projectId: "tiem-banh-mi-42883",
