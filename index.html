@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Tiệm Bánh Mì Sài Gòn</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #FFD400;
+    color: #333;
+    font-size: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 70px 12px 80px;
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  /* ===== KHU VỰC CHỨA CÁC CON VẬT ===== */
+  #pets-layer {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  
+  .pet {
+    position: absolute;
+    animation: pet-wiggle 2.5s ease-in-out infinite;
+    transform-origin: center bottom;
+    pointer-events: auto;
+    cursor: pointer;
+    filter: 
+      drop-shadow(2px 0 0 #fff)
+      drop-shadow(-2px 0 0 #fff)
+      drop-shadow(0 2px 0 #fff)
+      drop-shadow(0 -2px 0 #fff)
+      drop-shadow(0 6px 10px rgba(0,0,0,0.25));
+  }
+  
+  .pet img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  
+  .pet { width: 200px; height: 200px; }
+  
+  @keyframes pet-wiggle {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+  }
+  
+  @media (max-width: 400px) {
+    .pet { 
+      width: 45px; 
+      height: 45px;
+      filter: 
+        drop-shadow(1.5px 0 0 #fff)
+        drop-shadow(-1.5px 0 0 #fff)
+        drop-shadow(0 1.5px 0 #fff)
+        drop-shadow(0 -1.5px 0 #fff)
+        drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+    }
+  }
+  
+  @media (min-width: 401px) and (max-width: 600px) {
+    .pet { width: 90px; height: 90px; }
+  }
+  
+  @media (min-width: 601px) and (max-width: 1024px) {
+    .pet { width: 140px; height: 140px; }
+  }
+  
+  /* ===== TỜ LỊCH CHÍNH ===== */
+  .calendar-card {
+    background: #fff;
+    border-radius: 4px;
+    max-width: 420px;
+    width: 100%;
+    padding: 24px 20px 20px;
+    box-shadow: 
+      0 4px 12px rgba(0,0,0,0.15),
+      0 12px 32px rgba(0,0,0,0.12);
+    position: relative;
+    transform: rotate(-0.3deg);
+    z-index: 10;
+  }
+  
+  /* ===== HEADER: nút ‹ | ô đỏ | nút › ===== */
+  .cal-header {
+    display: grid;
+    grid-template-columns: 60px 1fr 60px;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    min-height: 60px;
+  }
+  
+  .nav-btn {
+    background: transparent;
+    border: none;
+    font-size: 36px;
+    color: #333;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    font-weight: 300;
+    transition: transform 0.15s, color 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 3;
+    position: relative;
+  }
+  
+  .nav-btn:hover { color: #E60000; }
+  .nav-btn:active { transform: scale(0.85); background: rgba(0,0,0,0.05); }
+  
+  .nav-btn.prev { 
+    justify-self: start;
+    margin-left: 4px;
+  }
+  
+  .nav-btn.next { 
+    justify-self: end;
+    margin-right: 4px;
+  }
+  
+  .cal-year-badge {
+    background: #E60000;
+    color: #fff;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(230,0,0,0.35);
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .weekdays div {
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: #666;
+    padding: 4px 0;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  
+  .weekdays .sun { color: #E6A000; }
+  .weekdays .sat { color: #E6A000; }
+  
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  
+  .day {
+    aspect-ratio: 1;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    border-radius: 50%;
+    transition: background 0.15s;
+    font-size: 15px;
+    font-weight: 400;
+    color: #333;
+    padding: 4px;
+  }
+  
+  .day .num {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1;
+  }
+  
+  .day .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-top: 3px;
+    background: transparent;
+  }
+  
+  .day.sun .num { color: #E6A000; }
+  .day.sat .num { color: #E6A000; }
+  
+  .day.empty {
+    cursor: default;
+    pointer-events: none;
+  }
+  
+  .day:not(.empty):active {
+    background: #FFF3CD;
+  }
+  
+  .day.green { background: #C8E6C9; }
+  .day.green .dot { background: #2E7D32; }
+  .day.yellow { background: #FFF3B0; }
+  .day.yellow .dot { background: #F9A825; }
+  .day.red { background: #FFCDD2; }
+  .day.red .dot { background: #C62828; }
+  
+  .day.today {
+    box-shadow: inset 0 0 0 2px #FF6F00;
+  }
+  
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px 0 0;
+    font-size: 11px;
+    color: #666;
+    flex-wrap: wrap;
+    border-top: 1px solid #eee;
+    margin-top: 12px;
+  }
+  
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  
+  .legend .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  
+  .shop-name {
+    text-align: center;
+    color: #8B0000;
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 16px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    z-index: 10;
+    position: relative;
+  }
+  
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  
+  .modal-overlay.active { display: block; }
+  
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 480px;
+    margin: 20px auto;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  
+  .modal h2 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    color: #5D4037;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .modal h2 .close {
+    background: #eee;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+    flex-shrink: 0;
+  }
+  
+  .section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FF6F00;
+    margin: 16px 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #FFE0B2;
+  }
+  
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    gap: 8px;
+  }
+  
+  .row label {
+    flex: 1;
+    font-size: 15px;
+    color: #555;
+  }
+  
+  .row input {
+    width: 110px;
+    padding: 10px;
+    border: 2px solid #FFE0B2;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: right;
+    font-weight: bold;
+    background: #FFFDE7;
+    font-family: inherit;
+  }
+  
+  .row input:focus {
+    outline: none;
+    border-color: #FFC107;
+    background: #fff;
+  }
+  
+  .row .unit {
+    font-size: 13px;
+    color: #999;
+    width: 40px;
+    text-align: left;
+  }
+  
+  .row input:disabled,
+  .item-row input:disabled,
+  .note-input:disabled {
+    background: #f5f5f5 !important;
+    color: #666 !important;
+    cursor: not-allowed;
+    border-color: #ddd !important;
+  }
+  
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 15px;
+    border-bottom: 1px dashed #f0f0f0;
+  }
+  
+  .result-row .label { color: #555; }
+  .result-row .value { font-weight: bold; color: #333; }
+  
+  .btn-secondary {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    border: 2px solid #FFC107;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #5D4037;
+    margin-top: 16px;
+    cursor: pointer;
+  }
+  
+  .btn-edit {
+    width: 100%;
+    padding: 14px;
+    background: #FFC107;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #5D4037;
+    margin-top: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,193,7,0.4);
+  }
+  
+  .btn-edit:active { transform: scale(0.98); }
+  
+  .note-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #FFE0B2;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #FFFDE7;
+    font-family: inherit;
+  }
+  
+  .item-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+  }
+  
+  .item-row input {
+    padding: 8px;
+    border: 2px solid #FFE0B2;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #FFFDE7;
+    font-family: inherit;
+  }
+  
+  .item-row input.name { flex: 2; text-align: left; }
+  .item-row input.num { flex: 1; text-align: right; }
+  
+  .item-row .remove {
+    background: #FFCDD2;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: #C62828;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  
+  .item-row .remove:disabled {
+    background: #f0f0f0;
+    color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .btn-add-item {
+    background: #FFF3CD;
+    border: 1px dashed #FFC107;
+    color: #5D4037;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+  }
+  
+  .btn-add-item:disabled {
+    background: #f5f5f5;
+    border-color: #ddd;
+    color: #999;
+    cursor: not-allowed;
+  }
+  
+  .sync-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+  
+  .sync-ok { background: #C8E6C9; color: #2E7D32; }
+  .sync-pending { background: #FFF3CD; color: #F57C00; animation: pulse 1s infinite; }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  
+  .summary-btn {
+    background: rgba(255,255,255,0.9);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #8B0000;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    margin-top: 12px;
+    z-index: 10;
+    position: relative;
+  }
+  
+  .summary-btn:active { transform: scale(0.97); }
+  
+  .fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #8B0000;
+    color: #fff;
+    border: none;
+    font-size: 28px;
+    box-shadow: 0 4px 16px rgba(139,0,0,0.5);
+    cursor: pointer;
+    z-index: 50;
+  }
+  
+  @media (max-width: 380px) {
+    .calendar-card { padding: 20px 14px 16px; }
+    .cal-header { grid-template-columns: 50px 1fr 50px; }
+    .nav-btn { font-size: 30px; width: 40px; height: 40px; }
+    .cal-year-badge { width: 88px; height: 88px; font-size: 19px; top: -44px; }
+    .weekdays div { font-size: 8px; }
+    .day .num { font-size: 14px; }
+    body { padding: 70px 8px 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="pets-layer"></div>
+
+<div class="calendar-card">
+  <!-- HEADER: nút ‹ bên trái | ô đỏ ở giữa | nút › bên phải -->
+  <div class="cal-header">
+    <button class="nav-btn prev" onclick="changeMonth(-1)" aria-label="Tháng trước">‹</button>
+    <div class="cal-year-badge" id="yearBadge">9/2026</div>
+    <button class="nav-btn next" onclick="changeMonth(1)" aria-label="Tháng sau">›</button>
+  </div>
+  
+  <div class="weekdays">
+    <div class="sun">CN</div>
+    <div>T2</div>
+    <div>T3</div>
+    <div>T4</div>
+    <div>T5</div>
+    <div>T6</div>
+    <div class="sat">T7</div>
+  </div>
+  
+  <div class="calendar" id="calendar"></div>
+  
+  <div class="legend">
+    <span><div class="swatch" style="background:#C8E6C9"></div> ≥28</span>
+    <span><div class="swatch" style="background:#FFF3B0"></div> 20-27</span>
+    <span><div class="swatch" style="background:#FFCDD2"></div> &lt;20</span>
+  </div>
+</div>
+
+<div class="shop-name">🍞 TIỆM BÁNH MÌ SÀI GÒN</div>
+
+<button class="summary-btn" onclick="showMonthSummary()">📊 Tổng kết tháng</button>
+
+<button class="fab" onclick="openDayModal(getTodayKey())">+</button>
+
+<div class="modal-overlay" id="dayModal">
+  <div class="modal">
+    <h2>
+      <span id="modalDate">Ngày</span>
+      <span id="syncBadge" class="sync-badge sync-ok">✓ Đã lưu</span>
+      <button class="close" onclick="closeDayModal()">✕</button>
+    </h2>
+    <div id="dayContent"></div>
+    <div id="editButtonArea"></div>
+    <button class="btn-secondary" onclick="closeDayModal()">Đóng</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="monthModal">
+  <div class="modal">
+    <h2>
+      <span id="monthModalTitle">Tổng kết tháng</span>
+      <button class="close" onclick="closeMonthModal()">✕</button>
+    </h2>
+    <div id="monthSummaryContent"></div>
+    <button class="btn-secondary" onclick="closeMonthModal()">Đóng</button>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="firebase.js"></script>
+<script src="sheets.js"></script>
+<script src="app.js"></script>
+
+<script>
+// ============ KHỞI TẠO DỮ LIỆU ============
+let data = {};
+
+function buildData() {
+  for (const key in RAW_DATA) {
+    const r = RAW_DATA[key];
+    const banhKhong = 0;
+    const banh15 = r.tongBan - r.banh20 - banhKhong;
+    const tienBan = banhKhong * 4000 + banh15 * 15000 + r.banh20 * 20000 + r.nuoc * 15000;
+    const tongChiPhi = r.chiPhi.reduce((s, i) => s + (i.soTien || 0), 0);
+    const tienCat = r.tienCat * 1000;
+    const tienLeDau = r.tienLeDau * 1000;
+    
+    data[key] = {
+      nhapMoi: r.nhapMoi,
+      tonDau: r.tonDau,
+      banhKhong: banhKhong,
+      banh15: banh15,
+      banh20: r.banh20,
+      nuoc: r.nuoc,
+      tienLeDau: tienLeDau,
+      tienCat: tienCat,
+      chiPhi: r.chiPhi,
+      ghiChu: r.ghiChu || '',
+      tongBanhBan: r.tongBan,
+      tienBan: tienBan,
+      tongChiPhi: tongChiPhi,
+      tienTon: tienLeDau + tienBan - tongChiPhi - tienCat
+    };
+  }
+}
+buildData();
+
+// ============ CẤU HÌNH ============
+const TODAY = new Date();
+let currentMonth = TODAY.getMonth();
+let currentYear = TODAY.getFullYear();
+
+function fmt(n) { return (n || 0).toLocaleString('vi-VN') + 'đ'; }
+function dateKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function getTodayKey() { return dateKey(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate()); }
+
+function isDayEmpty(d) {
+  if (!d) return true;
+  if ((d.tongBanhBan || 0) > 0) return false;
+  if ((d.nhapMoi || 0) > 0) return false;
+  if ((d.tonDau || 0) > 0) return false;
+  if ((d.nuoc || 0) > 0) return false;
+  if ((d.tienLeDau || 0) > 0) return false;
+  if ((d.tienCat || 0) > 0) return false;
+  if (d.chiPhi && d.chiPhi.some(c => (c.soTien || 0) > 0 || (c.ten || '').trim() !== '')) return false;
+  if (d.ghiChu && d.ghiChu.trim() !== '') return false;
+  return true;
+}
+
+// ============ LỊCH ============
+function renderCalendar() {
+  const cal = document.getElementById('calendar');
+  cal.innerHTML = '';
+  
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  
+  document.getElementById('yearBadge').textContent = `${currentMonth + 1}/${currentYear}`;
+  
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'day empty';
+    cal.appendChild(empty);
+  }
+  
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayEl = document.createElement('div');
+    dayEl.className = 'day';
+    const dow = new Date(currentYear, currentMonth, d).getDay();
+    if (dow === 0) dayEl.classList.add('sun');
+    if (dow === 6) dayEl.classList.add('sat');
+    
+    const key = dateKey(currentYear, currentMonth, d);
+    const dayData = data[key];
+    
+    if (dayData && !isDayEmpty(dayData)) {
+      const sold = dayData.tongBanhBan;
+      if (sold >= 28) dayEl.classList.add('green');
+      else if (sold >= 20) dayEl.classList.add('yellow');
+      else dayEl.classList.add('red');
+    }
+    
+    if (key === getTodayKey()) dayEl.classList.add('today');
+    
+    dayEl.innerHTML = `<div class="num">${d}</div><div class="dot"></div>`;
+    dayEl.onclick = () => openDayModal(key);
+    cal.appendChild(dayEl);
+  }
+}
+
+function changeMonth(delta) {
+  currentMonth += delta;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar();
+}
+
+// ============ MODAL NGÀY ============
+let currentEditingKey = null;
+let currentDayData = null;
+let isEditMode = false;
+
+function openDayModal(key) {
+  currentEditingKey = key;
+  const [y, m, d] = key.split('-');
+  document.getElementById('modalDate').textContent = `Ngày ${parseInt(d)}/${parseInt(m)}/${y}`;
+  
+  const r = data[key] || {
+    nhapMoi: 0, tonDau: 0, banhKhong: 0, banh15: 0, banh20: 0, nuoc: 0,
+    tienLeDau: 0, tienCat: 0, chiPhi: [], ghiChu: '',
+    tongBanhBan: 0, tienBan: 0, tongChiPhi: 0, tienTon: 0
+  };
+  
+  currentDayData = JSON.parse(JSON.stringify(r));
+  if (!currentDayData.chiPhi) currentDayData.chiPhi = [];
+  
+  const hasData = !isDayEmpty(currentDayData);
+  isEditMode = !hasData;
+  
+  renderDayForm();
+  document.getElementById('dayModal').classList.add('active');
+}
+
+function renderDayForm() {
+  const r = currentDayData;
+  const locked = !isEditMode;
+  const dis = locked ? 'disabled' : '';
+  
+  let html = `
+    <div class="section-title">📥 BÁNH MÌ</div>
+    <div class="row">
+      <label>Tồn từ hôm qua</label>
+      <input type="number" id="f_tonDau" value="${r.tonDau || 0}" min="0" inputmode="numeric" ${dis}>
+      <span class="unit">cái</span>
+    </div>
+    <div class="row">
+      <label>Nhập mới hôm nay</label>
+      <input type="number" id="f_nhapMoi" value="${r.nhapMoi || 0}" min="0" inputmode="numeric" ${dis}>
+      <span class="unit">cái</span>
+    </div>
+    
+    <div class="section-title">📤 BÁN HÀNG</div>
+    <div class="row">
+      <label>Bánh mì không (4k)</label>
+      <input type="number" id="f_banhKhong" value="${r.banhKhong || 0}" min="0" inputmode="numeric" ${dis}>
+      <span class="unit">cái</span>
+    </div>
+    <div class="row">
+      <label>Bánh mì 15k</label>
+      <input type="number" id="f_banh15" value="${r.banh15 || 0}" min="0" inputmode="numeric" ${dis}>
+      <span class="unit">cái</span>
+    </div>
+    <div class="row">
+      <label>Bánh mì 20k</label>
+      <input type="number" id="f_banh20" value="${r.banh20 || 0}" min="0" inputmode="numeric" ${dis}>
+      <span class="unit">cái</span>
+    </div>
+    <div class="row">
+      <label>Nước (15k)</label>
+      <input type="number" id="f_nuoc" value="${r.nuoc || 0}" min="0" inputmode="numeric" ${dis}>
+      <span class="unit">cốc</span>
+    </div>
+    
+    <div class="section-title">💵 CHI PHÍ LẤY HÀNG</div>
+    <div id="chiPhiList"></div>
+    <button class="btn-add-item" onclick="addChiPhi()" ${dis}>+ Thêm mục</button>
+    <div class="result-row">
+      <span class="label">Tổng chi phí</span>
+      <span class="value" id="tongChiPhi">0đ</span>
+    </div>
+    
+    <div class="section-title">💰 TIỀN</div>
+    <div class="row">
+      <label>Tiền lẻ đầu ngày</label>
+      <input type="number" id="f_tienLeDau" value="${r.tienLeDau || 0}" min="0" step="1000" inputmode="numeric" ${dis}>
+      <span class="unit">đ</span>
+    </div>
+    <div class="row">
+      <label>Tiền cất đi (doanh thu)</label>
+      <input type="number" id="f_tienCat" value="${r.tienCat || 0}" min="0" step="1000" inputmode="numeric" ${dis}>
+      <span class="unit">đ</span>
+    </div>
+    <div class="result-row">
+      <span class="label">Tiền tồn (để mai)</span>
+      <span class="value" id="tienTonHienthi">0đ</span>
+    </div>
+    
+    <div class="section-title">📝 GHI CHÚ</div>
+    <input type="text" id="f_ghiChu" class="note-input" value="${r.ghiChu || ''}" placeholder="Ghi chú thêm..." ${dis}>
+  `;
+  
+  document.getElementById('dayContent').innerHTML = html;
+  renderChiPhi();
+  
+  if (isEditMode) {
+    document.querySelectorAll('#dayContent input').forEach(input => {
+      input.addEventListener('input', onFormInput);
+      input.addEventListener('blur', onFormInput);
+    });
+  }
+  
+  renderEditButton();
+  recalc();
+}
+
+function renderEditButton() {
+  const area = document.getElementById('editButtonArea');
+  if (!isEditMode) {
+    area.innerHTML = `<button class="btn-edit" onclick="enableEditMode()">✏️ Sửa</button>`;
+  } else {
+    area.innerHTML = '';
+  }
+}
+
+function enableEditMode() {
+  isEditMode = true;
+  renderDayForm();
+}
+
+function renderChiPhi() {
+  const list = document.getElementById('chiPhiList');
+  const dis = !isEditMode ? 'disabled' : '';
+  list.innerHTML = '';
+  (currentDayData.chiPhi || []).forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <input type="text" class="name" value="${item.ten || ''}" placeholder="Tên mục" ${dis}>
+      <input type="number" class="num" value="${item.soTien || 0}" step="1000" inputmode="numeric" ${dis}>
+      <button class="remove" onclick="removeChiPhi(${idx})" ${dis}>✕</button>
+    `;
+    if (isEditMode) {
+      row.querySelector('.name').addEventListener('input', (e) => {
+        currentDayData.chiPhi[idx].ten = e.target.value;
+        onFormInput();
+      });
+      row.querySelector('.num').addEventListener('input', (e) => {
+        currentDayData.chiPhi[idx].soTien = +e.target.value || 0;
+        onFormInput();
+      });
+    }
+    list.appendChild(row);
+  });
+}
+
+function addChiPhi() {
+  if (!isEditMode) return;
+  if (!currentDayData.chiPhi) currentDayData.chiPhi = [];
+  currentDayData.chiPhi.push({ ten: '', soTien: 0 });
+  renderChiPhi();
+  onFormInput();
+}
+
+function removeChiPhi(idx) {
+  if (!isEditMode) return;
+  currentDayData.chiPhi.splice(idx, 1);
+  renderChiPhi();
+  onFormInput();
+}
+
+function onFormInput() {
+  if (!currentDayData || !isEditMode) return;
+  
+  currentDayData.tonDau = +document.getElementById('f_tonDau').value || 0;
+  currentDayData.nhapMoi = +document.getElementById('f_nhapMoi').value || 0;
+  currentDayData.banhKhong = +document.getElementById('f_banhKhong').value || 0;
+  currentDayData.banh15 = +document.getElementById('f_banh15').value || 0;
+  currentDayData.banh20 = +document.getElementById('f_banh20').value || 0;
+  currentDayData.nuoc = +document.getElementById('f_nuoc').value || 0;
+  currentDayData.tienLeDau = +document.getElementById('f_tienLeDau').value || 0;
+  currentDayData.tienCat = +document.getElementById('f_tienCat').value || 0;
+  currentDayData.ghiChu = document.getElementById('f_ghiChu').value;
+  
+  currentDayData.tongBanhBan = currentDayData.banhKhong + currentDayData.banh15 + currentDayData.banh20;
+  currentDayData.tienBan = currentDayData.banhKhong * 4000 + 
+                            currentDayData.banh15 * 15000 + 
+                            currentDayData.banh20 * 20000 + 
+                            currentDayData.nuoc * 15000;
+  currentDayData.tongChiPhi = (currentDayData.chiPhi || []).reduce((s, i) => s + (+i.soTien || 0), 0);
+  currentDayData.tienTon = currentDayData.tienLeDau + currentDayData.tienBan - 
+                            currentDayData.tongChiPhi - currentDayData.tienCat;
+  
+  document.getElementById('tongChiPhi').textContent = fmt(currentDayData.tongChiPhi);
+  document.getElementById('tienTonHienthi').textContent = fmt(currentDayData.tienTon);
+  
+  if (isDayEmpty(currentDayData)) {
+    delete data[currentEditingKey];
+    renderCalendar();
+    return;
+  }
+  
+  data[currentEditingKey] = { ...currentDayData };
+  renderCalendar();
+  
+  if (typeof onDataChanged === 'function') {
+    onDataChanged(currentEditingKey, currentDayData);
+  }
+}
+
+function recalc() {
+  if (!currentDayData) return;
+  const r = currentDayData;
+  const tongChiPhiEl = document.getElementById('tongChiPhi');
+  const tienTonEl = document.getElementById('tienTonHienthi');
+  
+  const tongChiPhi = (r.chiPhi || []).reduce((s, i) => s + (+i.soTien || 0), 0);
+  const tienBan = (r.banhKhong || 0) * 4000 + (r.banh15 || 0) * 15000 + (r.banh20 || 0) * 20000 + (r.nuoc || 0) * 15000;
+  const tienTon = (r.tienLeDau || 0) + tienBan - tongChiPhi - (r.tienCat || 0);
+  
+  if (tongChiPhiEl) tongChiPhiEl.textContent = fmt(tongChiPhi);
+  if (tienTonEl) tienTonEl.textContent = fmt(tienTon);
+}
+
+async function closeDayModal() {
+  if (typeof flushSheetsNow === 'function') {
+    await flushSheetsNow();
+  }
+  document.getElementById('dayModal').classList.remove('active');
+  currentEditingKey = null;
+  currentDayData = null;
+  isEditMode = false;
+}
+
+// ============ TỔNG KẾT THÁNG ============
+function showMonthSummary() {
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  let tongDoanhThu = 0, tongBanh = 0, tongChiPhi = 0;
+  let ngayTot = 0, ngayThuong = 0, ngayE = 0, soNgay = 0;
+  let bestDay = null, worstDay = null;
+  
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = dateKey(currentYear, currentMonth, d);
+    const r = data[key];
+    if (!r || isDayEmpty(r)) continue;
+    soNgay++;
+    tongDoanhThu += r.tienCat || 0;
+    tongBanh += r.tongBanhBan || 0;
+    tongChiPhi += r.tongChiPhi || 0;
+    
+    if (r.tongBanhBan >= 28) ngayTot++;
+    else if (r.tongBanhBan >= 20) ngayThuong++;
+    else ngayE++;
+    
+    if (!bestDay || r.tongBanhBan > bestDay.sold) bestDay = { d, sold: r.tongBanhBan };
+    if (!worstDay || r.tongBanhBan < worstDay.sold) worstDay = { d, sold: r.tongBanhBan };
+  }
+  
+  const html = `
+    <div class="result-row"><span class="label">📊 Tổng doanh thu (cất đi)</span><span class="value"><b>${fmt(tongDoanhThu)}</b></span></div>
+    <div class="result-row"><span class="label">🍞 Tổng bánh bán</span><span class="value">${tongBanh} cái</span></div>
+    <div class="result-row"><span class="label">💸 Tổng chi phí</span><span class="value">${fmt(tongChiPhi)}</span></div>
+    <div class="result-row"><span class="label">📅 Số ngày có dữ liệu</span><span class="value">${soNgay} ngày</span></div>
+    <div class="result-row"><span class="label">📈 Trung bình bán/ngày</span><span class="value">${soNgay ? Math.round(tongBanh/soNgay) : 0} cái</span></div>
+    <div class="result-row"><span class="label">🟢 Ngày tốt (≥28)</span><span class="value">${ngayTot} ngày</span></div>
+    <div class="result-row"><span class="label">🟡 Ngày thường (20-27)</span><span class="value">${ngayThuong} ngày</span></div>
+    <div class="result-row"><span class="label">🔴 Ngày ế (&lt;20)</span><span class="value">${ngayE} ngày</span></div>
+    ${bestDay ? `<div class="result-row"><span class="label">🏆 Bán chạy nhất</span><span class="value">${bestDay.d}/${currentMonth+1} (${bestDay.sold} cái)</span></div>` : ''}
+    ${worstDay ? `<div class="result-row"><span class="label">📉 Ế nhất</span><span class="value">${worstDay.d}/${currentMonth+1} (${worstDay.sold} cái)</span></div>` : ''}
+  `;
+  
+  document.getElementById('monthModalTitle').textContent = `Tổng kết tháng ${currentMonth + 1}/${currentYear}`;
+  document.getElementById('monthSummaryContent').innerHTML = html;
+  document.getElementById('monthModal').classList.add('active');
+}
+
+function closeMonthModal() { document.getElementById('monthModal').classList.remove('active'); }
+
+// ============ RANDOM CÁC CON VẬT (Poisson + tách cặp) ============
+const PETS = ['pet1.png', 'pet2.png', 'pet3.png', 'pet4.png', 'pet5.png', 'pet6.png'];
+
+function renderPets() {
+  const layer = document.getElementById('pets-layer');
+  layer.innerHTML = '';
+  
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  
+  // Cấu hình theo màn hình
+  let petCount, petSize, minDist, allowOverlap;
+  if (w < 400) {
+    petCount = 4; petSize = 45; minDist = 15; allowOverlap = true;
+  } else if (w < 600) {
+    petCount = 8; petSize = 90; minDist = 20; allowOverlap = false;
+  } else if (w < 1024) {
+    petCount = 10; petSize = 140; minDist = 30; allowOverlap = false;
+  } else {
+    petCount = 12; petSize = 200; minDist = 40; allowOverlap = false;
+  }
+  
+  // Vùng cấm (lịch ở giữa)
+  const calendarWidth = Math.min(420, w - 24);
+  const calendarHeight = 500;
+  const calendarLeft = (w - calendarWidth) / 2;
+  const calendarRight = calendarLeft + calendarWidth;
+  const calendarTop = (h - calendarHeight) / 2;
+  const calendarBottom = calendarTop + calendarHeight;
+  
+  const centerX = w / 2;
+  
+  function isInForbiddenZone(x, y, size) {
+    const buffer = allowOverlap ? 5 : 10;
+    if (x + size > calendarLeft + buffer && 
+        x < calendarRight - buffer && 
+        y + size > calendarTop + buffer && 
+        y < calendarBottom - buffer) {
+      return true;
+    }
+    return false;
+  }
+  
+  function isTooClose(x, y, size, placed, extraDist) {
+    const ed = extraDist || 0;
+    for (const p of placed) {
+      const dx = (x + size/2) - (p.x + p.size/2);
+      const dy = (y + size/2) - (p.y + p.size/2);
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < minDist + (size + p.size)/2 + ed) return true;
+    }
+    return false;
+  }
+  
+  // Danh sách: 6 con × 2 lần
+  let list = [];
+  for (let i = 0; i < 2; i++) {
+    PETS.forEach(p => list.push(p));
+  }
+  list = list.slice(0, petCount);
+  
+  const placed = [];
+  const maxAttempts = 3000;
+  
+  for (const src of list) {
+    const placedLeft = placed.some(p => p.src === src && p.side === 'left');
+    const placedRight = placed.some(p => p.src === src && p.side === 'right');
+    
+    let forceSide = null;
+    if (placedLeft && !placedRight) forceSide = 'right';
+    else if (placedRight && !placedLeft) forceSide = 'left';
+    
+    let found = false;
+    let currentAttempts = 0;
+    
+    // Thử với forceSide
+    while (!found && currentAttempts < maxAttempts) {
+      currentAttempts++;
+      const x = Math.random() * (w - petSize);
+      const y = Math.random() * (h - petSize);
+      
+      const side = (x + petSize/2) < centerX ? 'left' : 'right';
+      if (forceSide && side !== forceSide) continue;
+      if (isInForbiddenZone(x, y, petSize)) continue;
+      if (isTooClose(x, y, petSize, placed, 0)) continue;
+      
+      // Kiểm tra: 2 con cùng loại phải cách xa ≥ 40% chiều rộng màn hình
+      const sameImg = placed.filter(p => p.src === src);
+      let tooCloseSameImg = false;
+      for (const p of sameImg) {
+        const dx = (x + petSize/2) - (p.x + p.size/2);
+        const dy = (y + petSize/2) - (p.y + p.size/2);
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < w * 0.4) { tooCloseSameImg = true; break; }
+      }
+      if (tooCloseSameImg) continue;
+      
+      placed.push({ x, y, size: petSize, src, side });
+      found = true;
+    }
+    
+    // Fallback: bỏ forceSide
+    if (!found) {
+      currentAttempts = 0;
+      while (!found && currentAttempts < maxAttempts) {
+        currentAttempts++;
+        const x = Math.random() * (w - petSize);
+        const y = Math.random() * (h - petSize);
+        
+        if (isInForbiddenZone(x, y, petSize)) continue;
+        if (isTooClose(x, y, petSize, placed, 0)) continue;
+        
+        const side = (x + petSize/2) < centerX ? 'left' : 'right';
+        placed.push({ x, y, size: petSize, src, side });
+        found = true;
+      }
+    }
+  }
+  
+  // Render
+  placed.forEach((p) => {
+    const el = document.createElement('div');
+    el.className = 'pet';
+    el.style.left = p.x + 'px';
+    el.style.top = p.y + 'px';
+    el.style.width = petSize + 'px';
+    el.style.height = petSize + 'px';
+    
+    const duration = 2 + Math.random() * 1.5;
+    const delay = Math.random() * 2;
+    const reverse = Math.random() < 0.5;
+    el.style.animationDuration = duration + 's';
+    el.style.animationDelay = '-' + delay + 's';
+    if (reverse) el.style.animationDirection = 'reverse';
+    
+    el.innerHTML = `<img src="${p.src}" alt="" onerror="this.parentElement.style.display='none'">`;
+    layer.appendChild(el);
+  });
+  
+  console.log(`🐾 Đã đặt ${placed.length}/${petCount} con vật (size ${petSize}px)`);
+}
+
+// Render lại khi resize đáng kể
+let lastWidth = window.innerWidth;
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(window.innerWidth - lastWidth) > 100) {
+      lastWidth = window.innerWidth;
+      renderPets();
+    }
+  }, 300);
+});
+
+// ============ KHỞI TẠO ============
+renderCalendar();
+renderPets();
+
+(async () => {
+  if (typeof initFirebase === 'function') {
+    await initFirebase();
+    
+    if (typeof firebaseReady !== 'undefined' && firebaseReady) {
+      const fbData = await loadFromFirebase();
+      if (fbData && Object.keys(fbData).length > 0) {
+        Object.assign(data, fbData);
+        renderCalendar();
+      }
+      
+      listenFirebase((realtimeData) => {
+        Object.assign(data, realtimeData);
+        renderCalendar();
+      });
+    }
+  }
+  
+  if (typeof loadLocal === 'function') {
+    const localData = loadLocal();
+    Object.assign(data, localData);
+    renderCalendar();
+  }
+})();
+</script>
+
+</body>
+</html>
