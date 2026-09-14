@@ -1,7 +1,6 @@
 {
   "name": "tiem-banh-mi",
   "version": "1.0.0",
-  "description": "Web cập nhật tình hình kinh doanh tiệm bánh mì",
   "private": true,
   "dependencies": {
     "firebase-admin": "^12.0.0"
