@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Tiệm Bánh Mì Sài Gòn</title>
 <style>
@@ -83,19 +84,29 @@
     .pet { width: 140px; height: 140px; }
   }
   
-  /* ===== TỜ LỊCH CHÍNH ===== */
+  /* ===== TỜ LỊCH CHÍNH — STICKY NOTE ===== */
   .calendar-card {
-    background: #fff;
-    border-radius: 4px;
+    background: #FFFDF5;
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.008) 2px,
+        rgba(0,0,0,0.008) 4px
+      );
+    border-radius: 2px;
     max-width: 420px;
     width: 100%;
     padding: 24px 20px 20px;
-    box-shadow: 
-      0 4px 12px rgba(0,0,0,0.15),
-      0 12px 32px rgba(0,0,0,0.12);
     position: relative;
-    transform: rotate(-0.3deg);
     z-index: 10;
+    box-shadow: 
+      0 1px 2px rgba(0,0,0,0.1),
+      0 4px 8px rgba(0,0,0,0.1),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 24px 48px rgba(0,0,0,0.1);
+    transform: rotate(-0.5deg);
   }
   
   /* ===== HEADER: nút ‹ | ô đỏ | nút › ===== */
@@ -136,6 +147,14 @@
   
   .cal-year-badge {
     background: #E60000;
+    background-image: 
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 3px,
+        rgba(255,255,255,0.08) 3px,
+        rgba(255,255,255,0.08) 6px
+      );
     color: #fff;
     width: 100px;
     height: 100px;
@@ -146,7 +165,9 @@
     font-size: 22px;
     font-weight: 600;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(230,0,0,0.35);
+    box-shadow: 
+      0 4px 12px rgba(230,0,0,0.35),
+      inset 0 0 20px rgba(0,0,0,0.15);
     position: absolute;
     top: -50px;
     left: 50%;
@@ -194,31 +215,144 @@
     cursor: pointer;
     position: relative;
     border-radius: 50%;
-    transition: background 0.15s;
+    transition: transform 0.15s;
     font-size: 15px;
     font-weight: 400;
     color: #333;
     padding: 4px;
   }
   
-  .day .num { font-size: 15px; font-weight: 400; line-height: 1; }
+  .day .num { 
+    font-size: 15px; 
+    font-weight: 500; 
+    line-height: 1;
+    position: relative;
+    z-index: 3;
+  }
+  
   .day .dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    margin-top: 3px; background: transparent;
+    width: 5px; 
+    height: 5px; 
+    border-radius: 50%;
+    margin-top: 3px; 
+    background: transparent;
+    position: relative;
+    z-index: 3;
   }
   
   .day.sun .num { color: #E6A000; }
   .day.sat .num { color: #E6A000; }
   
   .day.empty { cursor: default; pointer-events: none; }
-  .day:not(.empty):active { background: #FFF3CD; }
+  .day:not(.empty):active { transform: scale(0.9); }
   
-  .day.green { background: #C8E6C9; }
+  /* ===== MÀU CRAYON — XANH ===== */
+  .day.green::before {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+    border-radius: 50%;
+    background: 
+      radial-gradient(circle at 30% 40%, rgba(46,125,50,0.55) 0%, rgba(46,125,50,0.35) 60%, rgba(46,125,50,0.55) 100%);
+    z-index: 1;
+    mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    mask-composite: intersect;
+    -webkit-mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    -webkit-mask-composite: source-in;
+  }
   .day.green .dot { background: #2E7D32; }
-  .day.yellow { background: #FFF3B0; }
+  .day.green::after {
+    content: '';
+    position: absolute;
+    top: 2%;
+    left: 2%;
+    right: 2%;
+    bottom: 2%;
+    border-radius: 50%;
+    border: 2.5px solid #2E7D32;
+    z-index: 2;
+    filter: url(#crayon-wobble);
+    opacity: 0.8;
+  }
+  
+  /* ===== MÀU CRAYON — VÀNG ===== */
+  .day.yellow::before {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+    border-radius: 50%;
+    background: 
+      radial-gradient(circle at 30% 40%, rgba(249,168,37,0.6) 0%, rgba(249,168,37,0.4) 60%, rgba(249,168,37,0.6) 100%);
+    z-index: 1;
+    mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    mask-composite: intersect;
+    -webkit-mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    -webkit-mask-composite: source-in;
+  }
   .day.yellow .dot { background: #F9A825; }
-  .day.red { background: #FFCDD2; }
+  .day.yellow::after {
+    content: '';
+    position: absolute;
+    top: 2%;
+    left: 2%;
+    right: 2%;
+    bottom: 2%;
+    border-radius: 50%;
+    border: 2.5px solid #F9A825;
+    z-index: 2;
+    filter: url(#crayon-wobble);
+    opacity: 0.8;
+  }
+  
+  /* ===== MÀU CRAYON — ĐỎ ===== */
+  .day.red::before {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+    border-radius: 50%;
+    background: 
+      radial-gradient(circle at 30% 40%, rgba(198,40,40,0.5) 0%, rgba(198,40,40,0.3) 60%, rgba(198,40,40,0.5) 100%);
+    z-index: 1;
+    mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    mask-composite: intersect;
+    -webkit-mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    -webkit-mask-composite: source-in;
+  }
   .day.red .dot { background: #C62828; }
+  .day.red::after {
+    content: '';
+    position: absolute;
+    top: 2%;
+    left: 2%;
+    right: 2%;
+    bottom: 2%;
+    border-radius: 50%;
+    border: 2.5px solid #C62828;
+    z-index: 2;
+    filter: url(#crayon-wobble);
+    opacity: 0.8;
+  }
   
   .day.today { box-shadow: inset 0 0 0 2px #FF6F00; }
   
@@ -235,18 +369,69 @@
   }
   
   .legend span { display: flex; align-items: center; gap: 5px; }
-  .legend .swatch { width: 10px; height: 10px; border-radius: 50%; }
+  
+  .legend .swatch { 
+    width: 12px; 
+    height: 12px; 
+    border-radius: 50%;
+    position: relative;
+  }
+  .legend .swatch::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    opacity: 0.7;
+  }
+  
+  /* ===== TÊN TIỆM — BĂNG KEO ===== */
+  .shop-name-wrapper {
+    text-align: center;
+    margin-top: 24px;
+    position: relative;
+    z-index: 10;
+    display: inline-block;
+    padding: 12px 28px;
+    transform: rotate(-1.5deg);
+  }
+  
+  /* Nền băng keo */
+  .shop-name-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -8px;
+    right: -8px;
+    bottom: 0;
+    background: rgba(255, 235, 130, 0.75);
+    background-image: 
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 3px,
+        rgba(255,255,255,0.3) 3px,
+        rgba(255,255,255,0.3) 4px
+      );
+    box-shadow: 
+      0 2px 6px rgba(0,0,0,0.12),
+      inset 0 0 12px rgba(255,255,255,0.4);
+    z-index: 1;
+    clip-path: polygon(
+      0% 8%, 2% 0%, 5% 6%, 8% 2%, 12% 7%, 88% 7%, 92% 2%, 95% 6%, 98% 0%, 100% 8%,
+      100% 92%, 98% 100%, 95% 94%, 92% 98%, 88% 93%, 12% 93%, 8% 98%, 5% 94%, 2% 100%, 0% 92%
+    );
+  }
   
   .shop-name {
     text-align: center;
     color: #8B0000;
     font-size: 15px;
     font-weight: 700;
-    margin-top: 16px;
     letter-spacing: 0.5px;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-    z-index: 10;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.7);
     position: relative;
+    z-index: 2;
   }
   
   /* ===== MODAL ===== */
@@ -398,7 +583,6 @@
     box-sizing: border-box;
   }
   
-  /* ===== FORM CHI PHÍ ===== */
   .item-row {
     display: flex;
     gap: 6px;
@@ -419,17 +603,8 @@
     box-sizing: border-box;
   }
   
-  .item-row input.name { 
-    flex: 1 1 55%; 
-    text-align: left; 
-    width: 55%;
-  }
-  
-  .item-row input.num { 
-    flex: 1 1 35%; 
-    text-align: right; 
-    width: 35%;
-  }
+  .item-row input.name { flex: 1 1 55%; text-align: left; width: 55%; }
+  .item-row input.num { flex: 1 1 35%; text-align: right; width: 35%; }
   
   .item-row .remove {
     background: #FFCDD2;
@@ -485,37 +660,73 @@
     50% { opacity: 0.6; }
   }
   
+  /* ===== NÚT TỔNG KẾT THÁNG — KHUNG VUÔNG + TÔ CRAYON TRẮNG ===== */
   .summary-btn {
-    background: rgba(255,255,255,0.9);
+    background: transparent;
     border: none;
-    padding: 10px 24px;
-    border-radius: 24px;
-    font-size: 14px;
-    font-weight: 600;
+    padding: 16px 44px;
+    font-size: 15px;
+    font-weight: 700;
     color: #8B0000;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    margin-top: 12px;
+    margin-top: 24px;
     z-index: 10;
     position: relative;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    transition: transform 0.15s;
+    font-family: inherit;
   }
   
-  .summary-btn:active { transform: scale(0.97); }
+  /* Lớp tô crayon trắng — nét di đi di lại */
+  .summary-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.7);
+    background-image: 
+      repeating-linear-gradient(
+        -12deg,
+        rgba(255,255,255,0.9) 0px,
+        rgba(255,255,255,0.9) 2px,
+        rgba(255,255,255,0.3) 2px,
+        rgba(255,255,255,0.3) 3px
+      ),
+      repeating-linear-gradient(
+        8deg,
+        rgba(255,255,255,0.7) 0px,
+        rgba(255,255,255,0.7) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+    z-index: -1;
+    border-radius: 4px;
+    box-shadow: 
+      0 2px 6px rgba(0,0,0,0.1),
+      inset 0 0 12px rgba(255,255,255,0.6);
+    filter: url(#crayon-wobble);
+  }
   
-  .fab {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #8B0000;
-    color: #fff;
-    border: none;
-    font-size: 28px;
-    box-shadow: 0 4px 16px rgba(139,0,0,0.5);
-    cursor: pointer;
-    z-index: 50;
+  /* Khung vuông nét bút */
+  .summary-btn::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 2.5px solid #8B0000;
+    border-radius: 6px;
+    filter: url(#crayon-wobble);
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  
+  .summary-btn:active { 
+    transform: scale(0.95); 
   }
   
   @media (max-width: 380px) {
@@ -526,27 +737,32 @@
     .day .num { font-size: 14px; }
     body { padding: 70px 8px 80px; }
     
-    .item-row input {
-      font-size: 13px;
-      padding: 7px 6px;
-    }
+    .item-row input { font-size: 13px; padding: 7px 6px; }
     .item-row input.name { flex: 1 1 50%; width: 50%; }
     .item-row input.num { flex: 1 1 35%; width: 35%; }
     .item-row .remove { flex: 0 0 28px; width: 28px; height: 28px; }
     
-    .row input {
-      width: 90px;
-      font-size: 15px;
-      padding: 8px;
-    }
-    .row .unit {
-      width: 36px;
-      font-size: 12px;
-    }
+    .row input { width: 90px; font-size: 15px; padding: 8px; }
+    .row .unit { width: 36px; font-size: 12px; }
+    
+    .shop-name-wrapper { padding: 10px 22px; }
+    .shop-name { font-size: 13px; }
+    
+    .summary-btn { padding: 14px 36px; font-size: 14px; }
   }
 </style>
 </head>
 <body>
+
+<!-- SVG filter cho nét crayon run run -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="crayon-wobble">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
 
 <div id="pets-layer"></div>
 
@@ -570,17 +786,17 @@
   <div class="calendar" id="calendar"></div>
   
   <div class="legend">
-    <span><div class="swatch" style="background:#C8E6C9"></div> ≥28</span>
-    <span><div class="swatch" style="background:#FFF3B0"></div> 20-27</span>
-    <span><div class="swatch" style="background:#FFCDD2"></div> &lt;20</span>
+    <span><div class="swatch" style="background:#C8E6C9; color:#2E7D32"></div> ≥28</span>
+    <span><div class="swatch" style="background:#FFF3B0; color:#F9A825"></div> 20-27</span>
+    <span><div class="swatch" style="background:#FFCDD2; color:#C62828"></div> &lt;20</span>
   </div>
 </div>
 
-<div class="shop-name">🍞 TIỆM BÁNH MÌ SÀI GÒN</div>
+<div class="shop-name-wrapper">
+  <div class="shop-name">TIỆM BÁNH MÌ SÀI GÒN</div>
+</div>
 
-<button class="summary-btn" onclick="showMonthSummary()">📊 Tổng kết tháng</button>
-
-<button class="fab" onclick="openDayModal(getTodayKey())">+</button>
+<button class="summary-btn" onclick="showMonthSummary()">Tổng kết tháng</button>
 
 <div class="modal-overlay" id="dayModal">
   <div class="modal">
