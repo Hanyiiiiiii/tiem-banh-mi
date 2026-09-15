@@ -26,7 +26,6 @@
     overflow-x: hidden;
   }
   
-  /* ===== KHU VỰC CHỨA CÁC CON VẬT ===== */
   #pets-layer {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -84,7 +83,6 @@
     .pet { width: 140px; height: 140px; }
   }
   
-  /* ===== TỜ LỊCH CHÍNH — STICKY NOTE ===== */
   .calendar-card {
     background: #FFFDF5;
     background-image: 
@@ -109,7 +107,6 @@
     transform: rotate(-0.5deg);
   }
   
-  /* ===== HEADER: nút ‹ | ô đỏ | nút › ===== */
   .cal-header {
     display: flex;
     justify-content: space-between;
@@ -246,7 +243,6 @@
   .day.empty { cursor: default; pointer-events: none; }
   .day:not(.empty):active { transform: scale(0.9); }
   
-  /* ===== MÀU CRAYON — XANH ===== */
   .day.green::before {
     content: '';
     position: absolute;
@@ -282,7 +278,6 @@
     opacity: 0.8;
   }
   
-  /* ===== MÀU CRAYON — VÀNG ===== */
   .day.yellow::before {
     content: '';
     position: absolute;
@@ -318,7 +313,6 @@
     opacity: 0.8;
   }
   
-  /* ===== MÀU CRAYON — ĐỎ ===== */
   .day.red::before {
     content: '';
     position: absolute;
@@ -354,6 +348,42 @@
     opacity: 0.8;
   }
   
+  /* Ngày có nhập hàng — xanh dương */
+  .day.blue::before {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+    border-radius: 50%;
+    background: 
+      radial-gradient(circle at 30% 40%, rgba(25,118,210,0.55) 0%, rgba(25,118,210,0.35) 60%, rgba(25,118,210,0.55) 100%);
+    z-index: 1;
+    mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    mask-composite: intersect;
+    -webkit-mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    -webkit-mask-composite: source-in;
+  }
+  .day.blue .dot { background: #1976D2; }
+  .day.blue::after {
+    content: '';
+    position: absolute;
+    top: 2%;
+    left: 2%;
+    right: 2%;
+    bottom: 2%;
+    border-radius: 50%;
+    border: 2.5px solid #1976D2;
+    z-index: 2;
+    filter: url(#crayon-wobble);
+    opacity: 0.85;
+  }
+  
   .day.today { box-shadow: inset 0 0 0 2px #FF6F00; }
   
   .legend {
@@ -385,7 +415,6 @@
     opacity: 0.7;
   }
   
-  /* ===== TÊN TIỆM — BĂNG KEO ===== */
   .shop-name-wrapper {
     text-align: center;
     margin-top: 24px;
@@ -394,9 +423,12 @@
     display: inline-block;
     padding: 12px 28px;
     transform: rotate(-1.5deg);
+    cursor: pointer;
+    transition: transform 0.15s;
   }
   
-  /* Nền băng keo */
+  .shop-name-wrapper:active { transform: rotate(-1.5deg) scale(0.95); }
+  
   .shop-name-wrapper::before {
     content: '';
     position: absolute;
@@ -434,7 +466,6 @@
     z-index: 2;
   }
   
-  /* ===== MODAL ===== */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -660,7 +691,6 @@
     50% { opacity: 0.6; }
   }
   
-  /* ===== NÚT TỔNG KẾT THÁNG — KHUNG VUÔNG + TÔ CRAYON TRẮNG ===== */
   .summary-btn {
     background: transparent;
     border: none;
@@ -678,7 +708,6 @@
     font-family: inherit;
   }
   
-  /* Lớp tô crayon trắng — nét di đi di lại */
   .summary-btn::before {
     content: '';
     position: absolute;
@@ -710,7 +739,6 @@
     filter: url(#crayon-wobble);
   }
   
-  /* Khung vuông nét bút */
   .summary-btn::after {
     content: '';
     position: absolute;
@@ -754,7 +782,6 @@
 </head>
 <body>
 
-<!-- SVG filter cho nét crayon run run -->
 <svg width="0" height="0" style="position:absolute">
   <defs>
     <filter id="crayon-wobble">
@@ -792,11 +819,74 @@
   </div>
 </div>
 
-<div class="shop-name-wrapper">
+<div class="shop-name-wrapper" onclick="openInvestmentModal()">
   <div class="shop-name">TIỆM BÁNH MÌ SÀI GÒN</div>
 </div>
 
 <button class="summary-btn" onclick="showMonthSummary()">Tổng kết tháng</button>
+
+<button class="summary-btn" onclick="openPurchaseModal()" style="margin-top: 8px;">Nhập hàng</button>
+
+<!-- Modal Chi phí đầu tư -->
+<div class="modal-overlay" id="investModal">
+  <div class="modal">
+    <h2>
+      <span>💰 CHI PHÍ ĐẦU TƯ BAN ĐẦU</span>
+      <button class="close" onclick="closeInvestmentModal()">✕</button>
+    </h2>
+    <div style="background: #FFF9E6; padding: 12px; border-radius: 8px; margin-bottom: 16px; text-align: center;">
+      <div style="font-size: 13px; color: #888;">Tổng chi phí đầu tư</div>
+      <div style="font-size: 22px; font-weight: bold; color: #8B0000;" id="investTotal">0đ</div>
+    </div>
+    <div id="investList"></div>
+    <div id="investButtonArea"></div>
+  </div>
+</div>
+
+<!-- Modal Lịch sử nhập hàng -->
+<div class="modal-overlay" id="purchaseModal">
+  <div class="modal">
+  <h2 style="justify-content: flex-end; margin-bottom: 0;">
+  <button class="close" onclick="closePurchaseModal()">✕</button>
+</h2>
+    
+    <div class="cal-header" style="margin-bottom: 16px;">
+      <button class="nav-btn prev" onclick="changePurchaseMonth(-1)">‹</button>
+      <div class="cal-year-badge" id="purchaseYearBadge" style="font-size: 18px;">9/2026</div>
+      <button class="nav-btn next" onclick="changePurchaseMonth(1)">›</button>
+    </div>
+    
+    <div class="weekdays" style="margin-bottom: 4px;">
+      <div class="sun">CN</div>
+      <div>T2</div>
+      <div>T3</div>
+      <div>T4</div>
+      <div>T5</div>
+      <div>T6</div>
+      <div class="sat">T7</div>
+    </div>
+    
+    <div class="calendar" id="purchaseCalendar"></div>
+    
+    <div style="text-align: center; font-size: 12px; color: #1976D2; margin-top: 12px;">
+      🔵 Ngày có nhập hàng
+    </div>
+    
+    <button class="btn-secondary" onclick="closePurchaseModal()">Đóng</button>
+  </div>
+</div>
+
+<!-- Modal Chi tiết ngày nhập hàng -->
+<div class="modal-overlay" id="purchaseDayModal">
+  <div class="modal">
+    <h2>
+      <span id="purchaseDayTitle">Ngày</span>
+      <button class="close" onclick="closePurchaseDayModal()">✕</button>
+    </h2>
+    <div id="purchaseDayContent"></div>
+    <div id="purchaseDayButtonArea"></div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="dayModal">
   <div class="modal">
@@ -823,12 +913,16 @@
 </div>
 
 <script src="data.js"></script>
+<script src="purchases.js"></script>
+<script src="purchases-firebase.js"></script>
+<script src="expenses.js"></script>
+<script src="investments.js"></script>
+<script src="ocr.js"></script>
 <script src="firebase.js"></script>
 <script src="sheets.js"></script>
 <script src="app.js"></script>
 
 <script>
-// ============ KHỞI TẠO DỮ LIỆU ============
 let data = {};
 
 function buildData() {
@@ -861,7 +955,6 @@ function buildData() {
 }
 buildData();
 
-// ============ CẤU HÌNH ============
 const TODAY = new Date();
 let currentMonth = TODAY.getMonth();
 let currentYear = TODAY.getFullYear();
@@ -883,7 +976,6 @@ function isDayEmpty(d) {
   return true;
 }
 
-// ============ LỊCH ============
 function renderCalendar() {
   const cal = document.getElementById('calendar');
   cal.innerHTML = '';
@@ -931,7 +1023,6 @@ function changeMonth(delta) {
   renderCalendar();
 }
 
-// ============ MODAL NGÀY ============
 let currentEditingKey = null;
 let currentDayData = null;
 let isEditMode = false;
@@ -1201,7 +1292,7 @@ async function closeDayModal() {
 // ============ TỔNG KẾT THÁNG ============
 function showMonthSummary() {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  let tongDoanhThu = 0, tongBanh = 0, tongChiPhi = 0;
+  let tongDoanhThu = 0, tongBanh = 0, tongChiPhiHangNgay = 0;
   let ngayTot = 0, ngayThuong = 0, ngayE = 0, soNgay = 0;
   let bestDay = null, worstDay = null;
   
@@ -1212,7 +1303,7 @@ function showMonthSummary() {
     soNgay++;
     tongDoanhThu += r.tienCat || 0;
     tongBanh += r.tongBanhBan || 0;
-    tongChiPhi += r.tongChiPhi || 0;
+    tongChiPhiHangNgay += r.tongChiPhi || 0;
     
     if (r.tongBanhBan >= 28) ngayTot++;
     else if (r.tongBanhBan >= 20) ngayThuong++;
@@ -1222,12 +1313,70 @@ function showMonthSummary() {
     if (!worstDay || r.tongBanhBan < worstDay.sold) worstDay = { d, sold: r.tongBanhBan };
   }
   
+  // ⭐ Dùng null để tự động lấy từ Firebase
+  const chiPhiLayHangTheoThang = tinhChiPhiLayHangTheoThang(null, data);
+  const thangKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+  const chiPhiLayHang = chiPhiLayHangTheoThang[thangKey] || 0;
+  
+  const baoBiTheoThang = tinhBaoBiTheoThang(PACKAGING, data);
+  const baoBi = baoBiTheoThang[thangKey] || 0;
+  
+  const doanhThuThuc = tongDoanhThu + tongChiPhiHangNgay;
+  const tienDienNuoc = TIEN_DIEN_NUOC;
+  const laiRong = doanhThuThuc - chiPhiLayHang - baoBi - tienDienNuoc;
+  
+  const tyLeLai = doanhThuThuc > 0 ? (laiRong / doanhThuThuc * 100) : 0;
+  const laiRongColor = laiRong >= 0 ? '#2E7D32' : '#C62828';
+  
+  const chiPhiKhaiTruong = tinhChiPhiKhaiTruong(PURCHASES, PACKAGING);
+  
   const html = `
-    <div class="result-row"><span class="label">📊 Tổng doanh thu (cất đi)</span><span class="value"><b>${fmt(tongDoanhThu)}</b></span></div>
-    <div class="result-row"><span class="label">🍞 Tổng bánh bán</span><span class="value">${tongBanh} cái</span></div>
-    <div class="result-row"><span class="label">💸 Tổng chi phí</span><span class="value">${fmt(tongChiPhi)}</span></div>
-    <div class="result-row"><span class="label">📅 Số ngày có dữ liệu</span><span class="value">${soNgay} ngày</span></div>
-    <div class="result-row"><span class="label">📈 Trung bình bán/ngày</span><span class="value">${soNgay ? Math.round(tongBanh/soNgay) : 0} cái</span></div>
+    <div class="section-title">💰 DOANH THU</div>
+    <div class="result-row">
+      <span class="label">Tiền cất đi (trong tháng)</span>
+      <span class="value">${fmt(tongDoanhThu)}</span>
+    </div>
+    <div class="result-row">
+      <span class="label">Chi phí hàng ngày</span>
+      <span class="value">${fmt(tongChiPhiHangNgay)}</span>
+    </div>
+    <div class="result-row" style="border-top: 2px solid #FFC107; padding-top: 12px; margin-top: 4px;">
+      <span class="label"><b>Tổng doanh thu thực</b></span>
+      <span class="value"><b>${fmt(doanhThuThuc)}</b></span>
+    </div>
+    
+    <div class="section-title">💸 CHI PHÍ</div>
+    <div class="result-row">
+      <span class="label">Chi phí lấy hàng (phân bổ)</span>
+      <span class="value">${fmt(chiPhiLayHang)}</span>
+    </div>
+    <div class="result-row">
+      <span class="label">Bao bì (phân bổ)</span>
+      <span class="value">${fmt(baoBi)}</span>
+    </div>
+    <div class="result-row">
+      <span class="label">Tiền điện nước</span>
+      <span class="value">${fmt(tienDienNuoc)}</span>
+    </div>
+    <div class="result-row" style="border-top: 2px solid #FFC107; padding-top: 12px; margin-top: 4px;">
+      <span class="label"><b>Tổng chi phí</b></span>
+      <span class="value"><b>${fmt(chiPhiLayHang + baoBi + tienDienNuoc)}</b></span>
+    </div>
+    
+    <div class="section-title">📈 LỢI NHUẬN RÒNG</div>
+    <div class="result-row" style="background: #FFF9E6; padding: 12px; border-radius: 8px; margin-top: 4px;">
+      <span class="label" style="font-size: 16px;"><b>Lãi ròng</b></span>
+      <span class="value" style="font-size: 18px; color: ${laiRongColor};"><b>${fmt(laiRong)}</b></span>
+    </div>
+    <div class="result-row" style="border-bottom: none; padding-top: 4px;">
+      <span class="label" style="font-size: 13px; color: #888;">Tỷ lệ lãi ròng</span>
+      <span class="value" style="font-size: 14px; color: ${laiRongColor};">${tyLeLai.toFixed(1)}%</span>
+    </div>
+    
+    <div class="section-title">📅 CHI TIẾT</div>
+    <div class="result-row"><span class="label">Số ngày có dữ liệu</span><span class="value">${soNgay} ngày</span></div>
+    <div class="result-row"><span class="label">Tổng bánh bán</span><span class="value">${tongBanh} cái</span></div>
+    <div class="result-row"><span class="label">Trung bình bán/ngày</span><span class="value">${soNgay ? Math.round(tongBanh/soNgay) : 0} cái</span></div>
     <div class="result-row"><span class="label">🟢 Ngày tốt (≥28)</span><span class="value">${ngayTot} ngày</span></div>
     <div class="result-row"><span class="label">🟡 Ngày thường (20-27)</span><span class="value">${ngayThuong} ngày</span></div>
     <div class="result-row"><span class="label">🔴 Ngày ế (&lt;20)</span><span class="value">${ngayE} ngày</span></div>
@@ -1241,6 +1390,494 @@ function showMonthSummary() {
 }
 
 function closeMonthModal() { document.getElementById('monthModal').classList.remove('active'); }
+
+// ============ CHI PHÍ ĐẦU TƯ BAN ĐẦU ============
+let investList = [];
+let investEditMode = false;
+
+async function openInvestmentModal() {
+  if (investList.length === 0) {
+    if (typeof loadInvestmentsFromFirebase === 'function' && firebaseReady) {
+      const fbData = await loadInvestmentsFromFirebase();
+      investList = fbData || JSON.parse(JSON.stringify(DEFAULT_INVESTMENTS));
+    } else {
+      investList = JSON.parse(JSON.stringify(DEFAULT_INVESTMENTS));
+    }
+  }
+  investEditMode = false;
+  renderInvestList();
+  document.getElementById('investModal').classList.add('active');
+}
+
+function closeInvestmentModal() {
+  document.getElementById('investModal').classList.remove('active');
+}
+
+function renderInvestList() {
+  const listEl = document.getElementById('investList');
+  const btnEl = document.getElementById('investButtonArea');
+  const totalEl = document.getElementById('investTotal');
+  
+  const total = investList.reduce((s, i) => s + (+i.tongTien || 0), 0);
+  totalEl.textContent = fmtTien(total);
+  
+  if (investList.length === 0) {
+    listEl.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">Chưa có mục nào</div>';
+  } else {
+    let html = '<div style="max-height: 400px; overflow-y: auto;">';
+    investList.forEach((item, idx) => {
+      html += `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; gap: 8px;">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 600; color: #333; word-break: break-word;">${item.ten}</div>
+            <div style="font-size: 12px; color: #999;">SL: ${item.soLuong}</div>
+          </div>
+          <div style="font-size: 14px; font-weight: bold; color: #8B0000; white-space: nowrap;">${fmtTien(item.tongTien)}</div>
+          ${investEditMode ? `
+            <button onclick="editInvestmentItem(${idx})" style="background: #FFF3CD; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px;">✏️</button>
+            <button onclick="deleteInvestmentItem(${idx})" style="background: #FFCDD2; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #C62828;">🗑️</button>
+          ` : ''}
+        </div>
+      `;
+    });
+    html += '</div>';
+    listEl.innerHTML = html;
+  }
+  
+  if (investEditMode) {
+    btnEl.innerHTML = `
+      <button class="btn-secondary" onclick="addInvestmentItem()" style="margin-bottom: 8px;">+ Thêm mục mới</button>
+      <button class="btn-edit" onclick="saveInvestEdit()">💾 Lưu</button>
+      <button class="btn-secondary" onclick="cancelInvestEdit()">Hủy</button>
+    `;
+  } else {
+    btnEl.innerHTML = `
+      <button class="btn-edit" onclick="enableInvestEditMode()">✏️ Sửa</button>
+      <button class="btn-secondary" onclick="closeInvestmentModal()">Đóng</button>
+    `;
+  }
+}
+
+function enableInvestEditMode() {
+  investEditMode = true;
+  renderInvestList();
+}
+
+function cancelInvestEdit() {
+  investEditMode = false;
+  if (typeof loadInvestmentsFromFirebase === 'function' && firebaseReady) {
+    loadInvestmentsFromFirebase().then(fbData => {
+      investList = fbData || JSON.parse(JSON.stringify(DEFAULT_INVESTMENTS));
+      renderInvestList();
+    });
+  } else {
+    try {
+      const savedInvest = localStorage.getItem('investList');
+      if (savedInvest) {
+        investList = JSON.parse(savedInvest);
+      } else {
+        investList = JSON.parse(JSON.stringify(DEFAULT_INVESTMENTS));
+      }
+    } catch (e) {
+      investList = JSON.parse(JSON.stringify(DEFAULT_INVESTMENTS));
+    }
+    renderInvestList();
+  }
+}
+
+async function saveInvestEdit() {
+  await saveInvestList();
+  investEditMode = false;
+  renderInvestList();
+}
+
+async function saveInvestList() {
+  if (typeof saveInvestmentsToFirebase === 'function' && firebaseReady) {
+    try {
+      await saveInvestmentsToFirebase(investList);
+    } catch (err) {
+      console.warn('⚠️ Không lưu được lên Firebase:', err.message);
+    }
+  }
+  localStorage.setItem('investList', JSON.stringify(investList));
+}
+
+function addInvestmentItem() {
+  const ten = prompt('Tên mục:');
+  if (!ten) return;
+  const soLuong = prompt('Số lượng:', '1');
+  if (soLuong === null) return;
+  const tongTien = prompt('Tổng tiền (đ):', '0');
+  if (tongTien === null) return;
+  
+  investList.push({
+    id: Date.now(),
+    ten: ten.trim(),
+    soLuong: soLuong.trim(),
+    tongTien: parseInt(tongTien) || 0
+  });
+  renderInvestList();
+}
+
+function editInvestmentItem(idx) {
+  const item = investList[idx];
+  const ten = prompt('Tên mục:', item.ten);
+  if (ten === null) return;
+  const soLuong = prompt('Số lượng:', item.soLuong);
+  if (soLuong === null) return;
+  const tongTien = prompt('Tổng tiền (đ):', item.tongTien);
+  if (tongTien === null) return;
+  
+  investList[idx] = {
+    ...item,
+    ten: ten.trim(),
+    soLuong: soLuong.trim(),
+    tongTien: parseInt(tongTien) || 0
+  };
+  renderInvestList();
+}
+
+function deleteInvestmentItem(idx) {
+  if (!confirm('Xóa mục "' + investList[idx].ten + '"?')) return;
+  investList.splice(idx, 1);
+  renderInvestList();
+}
+
+try {
+  const savedInvest = localStorage.getItem('investList');
+  if (savedInvest) investList = JSON.parse(savedInvest);
+} catch (e) {}
+
+// ============ LỊCH SỬ NHẬP HÀNG ============
+let purchaseMonth = TODAY.getMonth();
+let purchaseYear = TODAY.getFullYear();
+let currentPurchaseKey = null;
+let currentPurchaseData = null;
+let purchaseEditMode = false;
+
+async function openPurchaseModal() {
+  if (typeof loadPurchasesFromFirebase === 'function' && firebaseReady && !purchasesLoaded) {
+    const fbData = await loadPurchasesFromFirebase();
+    if (fbData) {
+      purchasesCache = fbData;
+      purchasesLoaded = true;
+    }
+  }
+  
+  purchaseMonth = TODAY.getMonth();
+  purchaseYear = TODAY.getFullYear();
+  renderPurchaseCalendar();
+  document.getElementById('purchaseModal').classList.add('active');
+}
+
+function closePurchaseModal() {
+  document.getElementById('purchaseModal').classList.remove('active');
+}
+
+function changePurchaseMonth(delta) {
+  purchaseMonth += delta;
+  if (purchaseMonth > 11) { purchaseMonth = 0; purchaseYear++; }
+  if (purchaseMonth < 0) { purchaseMonth = 11; purchaseYear--; }
+  renderPurchaseCalendar();
+}
+
+function renderPurchaseCalendar() {
+  const cal = document.getElementById('purchaseCalendar');
+  cal.innerHTML = '';
+  
+  const firstDay = new Date(purchaseYear, purchaseMonth, 1).getDay();
+  const daysInMonth = new Date(purchaseYear, purchaseMonth + 1, 0).getDate();
+  
+  document.getElementById('purchaseYearBadge').textContent = `${purchaseMonth + 1}/${purchaseYear}`;
+  
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'day empty';
+    cal.appendChild(empty);
+  }
+  
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayEl = document.createElement('div');
+    dayEl.className = 'day';
+    const dow = new Date(purchaseYear, purchaseMonth, d).getDay();
+    if (dow === 0) dayEl.classList.add('sun');
+    if (dow === 6) dayEl.classList.add('sat');
+    
+    const key = `${purchaseYear}-${String(purchaseMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    
+    let hasPurchase = false;
+    if (typeof purchasesCache !== 'undefined' && purchasesCache[key]) {
+      hasPurchase = true;
+    } else if (typeof PURCHASES !== 'undefined') {
+      hasPurchase = PURCHASES.some(p => p.ngay === key);
+    }
+    
+    if (hasPurchase) dayEl.classList.add('blue');
+    
+    dayEl.innerHTML = `<div class="num">${d}</div><div class="dot"></div>`;
+    dayEl.onclick = () => openPurchaseDayModal(key);
+    cal.appendChild(dayEl);
+  }
+}
+
+async function openPurchaseDayModal(key) {
+  currentPurchaseKey = key;
+  purchaseEditMode = false;
+  
+  const [y, m, d] = key.split('-');
+  document.getElementById('purchaseDayTitle').textContent = `📦 Nhập hàng ngày ${parseInt(d)}/${parseInt(m)}/${y}`;
+  
+  let dataPurchase = null;
+  if (typeof purchasesCache !== 'undefined' && purchasesCache[key]) {
+    dataPurchase = purchasesCache[key];
+  } else if (typeof PURCHASES !== 'undefined') {
+    const found = PURCHASES.find(p => p.ngay === key);
+    if (found) dataPurchase = found;
+  }
+  
+  if (dataPurchase) {
+    currentPurchaseData = JSON.parse(JSON.stringify(dataPurchase));
+    renderPurchaseDayView();
+  } else {
+    currentPurchaseData = {
+      ngay: key,
+      matHang: [{ ten: 'Bơ', soLuong: 0, donGia: 75000 }],
+      ship: 0,
+      ghiChu: ''
+    };
+    purchaseEditMode = true;
+    renderPurchaseDayForm();
+  }
+  
+  document.getElementById('purchaseDayModal').classList.add('active');
+}
+
+function closePurchaseDayModal() {
+  document.getElementById('purchaseDayModal').classList.remove('active');
+  currentPurchaseKey = null;
+  currentPurchaseData = null;
+  purchaseEditMode = false;
+  renderPurchaseCalendar();
+}
+
+function renderPurchaseDayView() {
+  const r = currentPurchaseData;
+  let html = '';
+  
+  let tong = 0;
+  (r.matHang || []).forEach(m => {
+    const tien = (m.soLuong || 0) * (m.donGia || 0);
+    tong += tien;
+    html += `<div class="result-row"><span class="label">${m.ten} — ${m.soLuong} × ${(m.donGia || 0).toLocaleString('vi-VN')}</span><span class="value">${tien.toLocaleString('vi-VN')}đ</span></div>`;
+  });
+  
+  if (r.ship) {
+    tong += r.ship;
+    html += `<div class="result-row"><span class="label">Ship</span><span class="value">${r.ship.toLocaleString('vi-VN')}đ</span></div>`;
+  }
+  
+  html += `<div class="result-row" style="border-top: 2px solid #FFC107; padding-top: 12px; margin-top: 8px;"><span class="label"><b>TỔNG CỘNG</b></span><span class="value"><b>${tong.toLocaleString('vi-VN')}đ</b></span></div>`;
+  
+  if (r.ghiChu) {
+    html += `<div class="section-title">📝 GHI CHÚ</div><div class="note-box" style="background:#FFF3CD; padding:8px 12px; border-radius:4px; font-size:13px;">${r.ghiChu}</div>`;
+  }
+  
+  document.getElementById('purchaseDayContent').innerHTML = html;
+  document.getElementById('purchaseDayButtonArea').innerHTML = `
+    <button class="btn-edit" onclick="enablePurchaseEdit()">✏️ Sửa</button>
+    <button class="btn-secondary" onclick="deletePurchase()" style="background: #FFCDD2; border-color: #C62828; color: #C62828;">🗑️ Xóa</button>
+    <button class="btn-secondary" onclick="closePurchaseDayModal()">Đóng</button>
+  `;
+}
+
+function renderPurchaseDayForm() {
+  const r = currentPurchaseData;
+  
+  let html = `
+    <div style="margin-bottom: 12px;">
+      <button class="btn-secondary" onclick="uploadHoaDon()" style="background: #E3F2FD; border-color: #1976D2; color: #1976D2; font-size: 14px;">📷 Upload hóa đơn (OCR)</button>
+      <input type="file" id="hoaDonInput" accept="image/*" style="display: none;" onchange="handleHoaDonUpload(event)">
+    </div>
+    <div class="section-title">📥 MẶT HÀNG</div>
+    <div id="purchaseMatHangList"></div>
+    <button class="btn-add-item" onclick="addPurchaseMatHang()">+ Thêm mặt hàng</button>
+    
+    <div class="row" style="margin-top: 12px;">
+      <label>Ship</label>
+      <input type="number" id="p_ship" value="${r.ship || 0}" step="1000" inputmode="numeric" oninput="recalcPurchase()">
+      <span class="unit">đ</span>
+    </div>
+    
+    <div class="result-row" style="border-top: 2px solid #FFC107; padding-top: 12px;">
+      <span class="label"><b>TỔNG CỘNG</b></span>
+      <span class="value" id="p_tong"><b>0đ</b></span>
+    </div>
+    
+    <div class="section-title">📝 GHI CHÚ</div>
+    <input type="text" id="p_ghiChu" class="note-input" value="${r.ghiChu || ''}" placeholder="Ghi chú...">
+  `;
+  
+  document.getElementById('purchaseDayContent').innerHTML = html;
+  renderPurchaseMatHang();
+  recalcPurchase();
+  
+  document.getElementById('purchaseDayButtonArea').innerHTML = `
+    <button class="btn-edit" onclick="savePurchase()">💾 Lưu</button>
+    <button class="btn-secondary" onclick="cancelPurchaseEdit()">Hủy</button>
+  `;
+}
+
+function renderPurchaseMatHang() {
+  const list = document.getElementById('purchaseMatHangList');
+  list.innerHTML = '';
+  (currentPurchaseData.matHang || []).forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.style.flexWrap = 'wrap';
+    row.innerHTML = `
+      <input type="text" class="name" value="${item.ten || ''}" placeholder="Tên món" style="flex: 1 1 100%; margin-bottom: 4px;">
+      <input type="number" class="num" value="${item.soLuong || 0}" placeholder="SL" style="flex: 1 1 25%;" inputmode="numeric">
+      <input type="number" class="num" value="${item.donGia || 0}" placeholder="Đơn giá" style="flex: 1 1 40%;" inputmode="numeric">
+      <button class="remove" onclick="removePurchaseMatHang(${idx})" style="flex: 0 0 32px;">✕</button>
+    `;
+    row.querySelectorAll('input')[0].addEventListener('input', (e) => {
+      currentPurchaseData.matHang[idx].ten = e.target.value;
+      recalcPurchase();
+    });
+    row.querySelectorAll('input')[1].addEventListener('input', (e) => {
+      currentPurchaseData.matHang[idx].soLuong = +e.target.value || 0;
+      recalcPurchase();
+    });
+    row.querySelectorAll('input')[2].addEventListener('input', (e) => {
+      currentPurchaseData.matHang[idx].donGia = +e.target.value || 0;
+      recalcPurchase();
+    });
+    list.appendChild(row);
+  });
+}
+
+function addPurchaseMatHang() {
+  if (!currentPurchaseData.matHang) currentPurchaseData.matHang = [];
+  currentPurchaseData.matHang.push({ ten: '', soLuong: 0, donGia: 0 });
+  renderPurchaseMatHang();
+  recalcPurchase();
+}
+
+function removePurchaseMatHang(idx) {
+  currentPurchaseData.matHang.splice(idx, 1);
+  renderPurchaseMatHang();
+  recalcPurchase();
+}
+
+function recalcPurchase() {
+  const r = currentPurchaseData;
+  if (!r) return;
+  
+  const shipEl = document.getElementById('p_ship');
+  const ghiChuEl = document.getElementById('p_ghiChu');
+  if (shipEl) r.ship = +shipEl.value || 0;
+  if (ghiChuEl) r.ghiChu = ghiChuEl.value;
+  
+  let tong = r.ship;
+  (r.matHang || []).forEach(m => {
+    tong += (m.soLuong || 0) * (m.donGia || 0);
+  });
+  
+  const tongEl = document.getElementById('p_tong');
+  if (tongEl) tongEl.innerHTML = `<b>${tong.toLocaleString('vi-VN')}đ</b>`;
+}
+
+function enablePurchaseEdit() {
+  purchaseEditMode = true;
+  renderPurchaseDayForm();
+}
+
+function cancelPurchaseEdit() {
+  closePurchaseDayModal();
+}
+
+async function savePurchase() {
+  recalcPurchase();
+  
+  currentPurchaseData.matHang = (currentPurchaseData.matHang || []).filter(m => m.ten && m.ten.trim());
+  
+  if (currentPurchaseData.matHang.length === 0) {
+    alert('Vui lòng nhập ít nhất 1 mặt hàng');
+    return;
+  }
+  
+  if (typeof savePurchaseToFirebase === 'function' && firebaseReady) {
+    try {
+      await savePurchaseToFirebase(currentPurchaseKey, currentPurchaseData);
+      alert('✅ Đã lưu');
+      closePurchaseDayModal();
+    } catch (err) {
+      alert('❌ Lỗi lưu: ' + err.message);
+    }
+  } else {
+    alert('❌ Firebase chưa sẵn sàng');
+  }
+}
+
+async function deletePurchase() {
+  if (!confirm('Xóa lần nhập hàng này?')) return;
+  if (typeof deletePurchaseFromFirebase === 'function' && firebaseReady) {
+    try {
+      await deletePurchaseFromFirebase(currentPurchaseKey);
+      alert('🗑️ Đã xóa');
+      closePurchaseDayModal();
+    } catch (err) {
+      alert('❌ Lỗi xóa: ' + err.message);
+    }
+  }
+}
+
+function uploadHoaDon() {
+  document.getElementById('hoaDonInput').click();
+}
+
+async function handleHoaDonUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (typeof processHoaDonImage !== 'function') {
+    alert('❌ OCR chưa sẵn sàng');
+    return;
+  }
+  
+  const btnEl = event.target.parentElement.querySelector('button');
+  const originalText = btnEl.textContent;
+  btnEl.textContent = '⏳ Đang đọc hóa đơn...';
+  btnEl.disabled = true;
+  
+  try {
+    const parsed = await processHoaDonImage(file);
+    
+    if (parsed.matHang && parsed.matHang.length > 0) {
+      const msg = `Đọc được ${parsed.matHang.length} mặt hàng:\n\n` +
+        parsed.matHang.map(m => `• ${m.ten}: ${m.soLuong} × ${m.donGia.toLocaleString('vi-VN')}`).join('\n') +
+        `\n\nThêm vào form?`;
+      
+      if (confirm(msg)) {
+        currentPurchaseData.matHang = parsed.matHang.map(m => ({
+          ten: m.ten,
+          soLuong: m.soLuong,
+          donGia: m.donGia
+        }));
+        renderPurchaseMatHang();
+        recalcPurchase();
+      }
+    } else {
+      alert('⚠️ Không đọc được mặt hàng nào. Vui lòng nhập tay.');
+    }
+  } catch (err) {
+    alert('❌ Lỗi OCR: ' + err.message);
+  } finally {
+    btnEl.textContent = originalText;
+    btnEl.disabled = false;
+    event.target.value = '';
+  }
+}
 
 // ============ RANDOM CÁC CON VẬT ============
 const PETS = ['pet1.png', 'pet2.png', 'pet3.png', 'pet4.png', 'pet5.png', 'pet6.png'];
@@ -1393,7 +2030,6 @@ window.addEventListener('resize', () => {
   }, 300);
 });
 
-// ============ KHỞI TẠO ============
 renderCalendar();
 renderPets();
 
@@ -1412,6 +2048,15 @@ renderPets();
         Object.assign(data, realtimeData);
         renderCalendar();
       });
+      
+      // Load purchases từ Firebase
+      if (typeof loadPurchasesFromFirebase === 'function') {
+        const purchasesData = await loadPurchasesFromFirebase();
+        if (purchasesData) {
+          purchasesCache = purchasesData;
+          purchasesLoaded = true;
+        }
+      }
     }
   }
   

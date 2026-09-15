@@ -15,10 +15,12 @@ const firebaseScripts = [
   "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"
 ];
 
+// Biến toàn cục
 let firebaseApp = null;
 let firestore = null;
 let firebaseReady = false;
 
+// Khởi tạo Firebase
 async function initFirebase() {
   try {
     for (const src of firebaseScripts) {
@@ -36,6 +38,7 @@ async function initFirebase() {
   }
 }
 
+// Helper load script
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -46,6 +49,7 @@ function loadScript(src) {
   });
 }
 
+// Lưu 1 ngày lên Firebase
 async function saveToFirebase(dateKey, dayData) {
   if (!firebaseReady) {
     throw new Error('Firebase chưa sẵn sàng');
@@ -63,6 +67,7 @@ async function saveToFirebase(dateKey, dayData) {
   }
 }
 
+// Đọc tất cả dữ liệu từ Firebase
 async function loadFromFirebase() {
   if (!firebaseReady) return null;
   try {
@@ -79,6 +84,7 @@ async function loadFromFirebase() {
   }
 }
 
+// Lắng nghe thay đổi realtime
 function listenFirebase(callback) {
   if (!firebaseReady) return;
   firestore.collection('doanhthu').onSnapshot(snapshot => {
