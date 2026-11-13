@@ -925,12 +925,27 @@
 <script>
 let data = {};
 
+// Giá bánh
+const GIA_BANH_KHONG = 4000;
+const GIA_BANH_15 = 15000;
+const GIA_BANH_20 = 20000;
+const GIA_BANH_25 = 25000;
+const GIA_BANH_30 = 30000;
+const GIA_NUOC = 15000;
+
 function buildData() {
   for (const key in RAW_DATA) {
     const r = RAW_DATA[key];
-    const banhKhong = 0;
-    const banh15 = r.tongBan - r.banh20 - banhKhong;
-    const tienBan = banhKhong * 4000 + banh15 * 15000 + r.banh20 * 20000 + r.nuoc * 15000;
+    const banhKhong = r.banhKhong || 0;
+    const banh15 = r.banh15 !== undefined ? r.banh15 : (r.tongBan - (r.banh20 || 0) - (r.banh25 || 0) - (r.banh30 || 0) - banhKhong);
+    const banh25 = r.banh25 || 0;
+    const banh30 = r.banh30 || 0;
+    const tienBan = banhKhong * GIA_BANH_KHONG + 
+                    banh15 * GIA_BANH_15 + 
+                    (r.banh20 || 0) * GIA_BANH_20 + 
+                    banh25 * GIA_BANH_25 + 
+                    banh30 * GIA_BANH_30 + 
+                    (r.nuoc || 0) * GIA_NUOC;
     const tongChiPhi = r.chiPhi.reduce((s, i) => s + (i.soTien || 0), 0);
     const tienCat = r.tienCat * 1000;
     const tienLeDau = r.tienLeDau * 1000;
@@ -940,8 +955,10 @@ function buildData() {
       tonDau: r.tonDau,
       banhKhong: banhKhong,
       banh15: banh15,
-      banh20: r.banh20,
-      nuoc: r.nuoc,
+      banh20: r.banh20 || 0,
+      banh25: banh25,
+      banh30: banh30,
+      nuoc: r.nuoc || 0,
       tienLeDau: tienLeDau,
       tienCat: tienCat,
       chiPhi: r.chiPhi,
@@ -969,6 +986,8 @@ function isDayEmpty(d) {
   if ((d.nhapMoi || 0) > 0) return false;
   if ((d.tonDau || 0) > 0) return false;
   if ((d.nuoc || 0) > 0) return false;
+  if ((d.banh25 || 0) > 0) return false;
+  if ((d.banh30 || 0) > 0) return false;
   if ((d.tienLeDau || 0) > 0) return false;
   if ((d.tienCat || 0) > 0) return false;
   if (d.chiPhi && d.chiPhi.some(c => (c.soTien || 0) > 0 || (c.ten || '').trim() !== '')) return false;
@@ -1033,13 +1052,15 @@ function openDayModal(key) {
   document.getElementById('modalDate').textContent = `Ngày ${parseInt(d)}/${parseInt(m)}/${y}`;
   
   const r = data[key] || {
-    nhapMoi: 0, tonDau: 0, banhKhong: 0, banh15: 0, banh20: 0, nuoc: 0,
+    nhapMoi: 0, tonDau: 0, banhKhong: 0, banh15: 0, banh20: 0, banh25: 0, banh30: 0, nuoc: 0,
     tienLeDau: 0, tienCat: 0, chiPhi: [], ghiChu: '',
     tongBanhBan: 0, tienBan: 0, tongChiPhi: 0, tienTon: 0
   };
   
   currentDayData = JSON.parse(JSON.stringify(r));
   if (!currentDayData.chiPhi) currentDayData.chiPhi = [];
+  if (currentDayData.banh25 === undefined) currentDayData.banh25 = 0;
+  if (currentDayData.banh30 === undefined) currentDayData.banh30 = 0;
   
   const hasData = !isDayEmpty(currentDayData);
   
@@ -1070,6 +1091,8 @@ function renderDayView() {
     <div class="result-row"><span class="label">Bánh mì không (4k)</span><span class="value">${r.banhKhong || 0} cái</span></div>
     <div class="result-row"><span class="label">Bánh mì 15k</span><span class="value">${r.banh15 || 0} cái</span></div>
     <div class="result-row"><span class="label">Bánh mì 20k</span><span class="value">${r.banh20 || 0} cái</span></div>
+    <div class="result-row"><span class="label">Bánh mì 25k</span><span class="value">${r.banh25 || 0} cái</span></div>
+    <div class="result-row"><span class="label">Bánh mì 30k</span><span class="value">${r.banh30 || 0} cái</span></div>
     <div class="result-row"><span class="label">Nước (15k)</span><span class="value">${r.nuoc || 0} cốc</span></div>
     
     <div class="section-title">💵 CHI PHÍ LẤY HÀNG</div>
@@ -1131,6 +1154,16 @@ function renderDayForm() {
     <div class="row">
       <label>Bánh mì 20k</label>
       <input type="number" id="f_banh20" value="${r.banh20 || 0}" min="0" inputmode="numeric" ${dis}>
+      <span class="unit">cái</span>
+    </div>
+    <div class="row">
+      <label>Bánh mì 25k</label>
+      <input type="number" id="f_banh25" value="${r.banh25 || 0}" min="0" inputmode="numeric" ${dis}>
+      <span class="unit">cái</span>
+    </div>
+    <div class="row">
+      <label>Bánh mì 30k</label>
+      <input type="number" id="f_banh30" value="${r.banh30 || 0}" min="0" inputmode="numeric" ${dis}>
       <span class="unit">cái</span>
     </div>
     <div class="row">
@@ -1234,16 +1267,22 @@ function onFormInput() {
   currentDayData.banhKhong = +el('f_banhKhong').value || 0;
   currentDayData.banh15 = +el('f_banh15').value || 0;
   currentDayData.banh20 = +el('f_banh20').value || 0;
+  currentDayData.banh25 = +el('f_banh25').value || 0;
+  currentDayData.banh30 = +el('f_banh30').value || 0;
   currentDayData.nuoc = +el('f_nuoc').value || 0;
   currentDayData.tienLeDau = +el('f_tienLeDau').value || 0;
   currentDayData.tienCat = +el('f_tienCat').value || 0;
   currentDayData.ghiChu = el('f_ghiChu').value;
   
-  currentDayData.tongBanhBan = currentDayData.banhKhong + currentDayData.banh15 + currentDayData.banh20;
-  currentDayData.tienBan = currentDayData.banhKhong * 4000 + 
-                            currentDayData.banh15 * 15000 + 
-                            currentDayData.banh20 * 20000 + 
-                            currentDayData.nuoc * 15000;
+  currentDayData.tongBanhBan = currentDayData.banhKhong + currentDayData.banh15 + 
+                                currentDayData.banh20 + currentDayData.banh25 + 
+                                currentDayData.banh30;
+  currentDayData.tienBan = currentDayData.banhKhong * GIA_BANH_KHONG + 
+                            currentDayData.banh15 * GIA_BANH_15 + 
+                            currentDayData.banh20 * GIA_BANH_20 + 
+                            currentDayData.banh25 * GIA_BANH_25 + 
+                            currentDayData.banh30 * GIA_BANH_30 + 
+                            currentDayData.nuoc * GIA_NUOC;
   currentDayData.tongChiPhi = (currentDayData.chiPhi || []).reduce((s, i) => s + (+i.soTien || 0), 0);
   currentDayData.tienTon = currentDayData.tienLeDau + currentDayData.tienBan - 
                             currentDayData.tongChiPhi - currentDayData.tienCat;
@@ -1272,7 +1311,12 @@ function recalc() {
   const tienTonEl = document.getElementById('tienTonHienthi');
   
   const tongChiPhi = (r.chiPhi || []).reduce((s, i) => s + (+i.soTien || 0), 0);
-  const tienBan = (r.banhKhong || 0) * 4000 + (r.banh15 || 0) * 15000 + (r.banh20 || 0) * 20000 + (r.nuoc || 0) * 15000;
+  const tienBan = (r.banhKhong || 0) * GIA_BANH_KHONG + 
+                  (r.banh15 || 0) * GIA_BANH_15 + 
+                  (r.banh20 || 0) * GIA_BANH_20 + 
+                  (r.banh25 || 0) * GIA_BANH_25 + 
+                  (r.banh30 || 0) * GIA_BANH_30 + 
+                  (r.nuoc || 0) * GIA_NUOC;
   const tienTon = (r.tienLeDau || 0) + tienBan - tongChiPhi - (r.tienCat || 0);
   
   if (tongChiPhiEl) tongChiPhiEl.textContent = fmt(tongChiPhi);
