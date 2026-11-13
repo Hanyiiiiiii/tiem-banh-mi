@@ -108,6 +108,8 @@ module.exports = async (req, res) => {
         '• Số bánh nhập: 30+11 (cũ)\n' +
         '• Bánh bán ra trong ngày: 31\n' +
         '• Số bánh 20k: 7\n' +
+        '• Số bánh 25k: 3\n' +
+        '• Số bánh 30k: 2\n' +
         '• Nước: 3\n' +
         '• Tổng tiền thu được: 530+147\n' +
         '• Tiền tồn: 152\n' +
@@ -146,6 +148,8 @@ module.exports = async (req, res) => {
       banhKhong: parsed.banhKhong,
       banh15: parsed.banh15,
       banh20: parsed.banh20,
+      banh25: parsed.banh25,
+      banh30: parsed.banh30,
       nuoc: parsed.nuoc,
       tienLeDau: parsed.tienLeDau,
       tienCat: parsed.tienCat,
@@ -183,4 +187,3 @@ module.exports = async (req, res) => {
     return res.status(500).json({ ok: false, error: err.message });
   }
 };
-
