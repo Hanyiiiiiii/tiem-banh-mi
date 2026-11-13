@@ -3,6 +3,8 @@
 // • Số bánh nhập: 30+11 (cũ)
 // • Bánh bán ra trong ngày: 31
 // • Số bánh 20k: 07
+// • Số bánh 25k: 03
+// • Số bánh 30k: 02
 // • Nước: 20
 // • Tổng tiền thu được: 530
 // • Tiền tồn: 260
@@ -21,6 +23,8 @@ function parseMessage(text) {
     banhKhong: 0,
     banh15: 0,
     banh20: 0,
+    banh25: 0,
+    banh30: 0,
     nuoc: 0,
     tienLeDau: 0,
     tienCat: 0,
@@ -82,6 +86,22 @@ function parseMessage(text) {
       const nums = value.match(/\d+/g);
       if (nums) {
         parsed.banh20 = parseInt(nums[0]);
+      }
+    }
+    
+    // === Số bánh 25k ===
+    if (key.includes('25k') || key.includes('bánh 25')) {
+      const nums = value.match(/\d+/g);
+      if (nums) {
+        parsed.banh25 = parseInt(nums[0]);
+      }
+    }
+    
+    // === Số bánh 30k ===
+    if (key.includes('30k') || key.includes('bánh 30')) {
+      const nums = value.match(/\d+/g);
+      if (nums) {
+        parsed.banh30 = parseInt(nums[0]);
       }
     }
     
@@ -162,6 +182,8 @@ function parseMessage(text) {
   result.tonDau = parsed.tonDau || 0;
   result.nhapMoi = parsed.nhapMoi || 0;
   result.banh20 = parsed.banh20 || 0;
+  result.banh25 = parsed.banh25 || 0;
+  result.banh30 = parsed.banh30 || 0;
   result.nuoc = parsed.nuoc || 0;
   result.tienCat = parsed.tienCat || 0;
   result.tienLeDau = parsed.tienLeDau || 0;
@@ -174,9 +196,9 @@ function parseMessage(text) {
   // Bánh không (mì không) đã có trong parsed.banhKhong
   result.banhKhong = parsed.banhKhong || 0;
   
-  // Bánh 15k = tổng bánh - bánh không - bánh 20k
-  // (mẹ chỉ ghi rõ 20k và mì không, còn lại là 15k)
-  result.banh15 = Math.max(0, totalBanh - result.banhKhong - result.banh20);
+  // Bánh 15k = tổng bánh - bánh không - bánh 20k - bánh 25k - bánh 30k
+  // (mẹ chỉ ghi rõ 20k, 25k, 30k và mì không, còn lại là 15k)
+  result.banh15 = Math.max(0, totalBanh - result.banhKhong - result.banh20 - result.banh25 - result.banh30);
   
   // Tiền bán hàng (nếu không parse được từ "Tổng tiền thu", tự tính)
   if (parsed.tienBan) {
@@ -185,6 +207,8 @@ function parseMessage(text) {
     result.tienBan = result.banhKhong * 4000 + 
                      result.banh15 * 15000 + 
                      result.banh20 * 20000 + 
+                     result.banh25 * 25000 + 
+                     result.banh30 * 30000 + 
                      result.nuoc * 15000;
   }
   
@@ -215,7 +239,7 @@ function formatConfirmation(dateKey, data) {
   msg += `  • Tồn đầu: ${data.tonDau} cái\n`;
   msg += `  • Nhập mới: ${data.nhapMoi} cái\n`;
   msg += `  • Bán ra: ${data.tongBanhBan} cái\n`;
-  msg += `  • (20k: ${data.banh20}, 15k: ${data.banh15}, mì không: ${data.banhKhong})\n`;
+  msg += `  • (20k: ${data.banh20}, 25k: ${data.banh25}, 30k: ${data.banh30}, 15k: ${data.banh15}, mì không: ${data.banhKhong})\n`;
   msg += `  • Nước: ${data.nuoc} cốc\n\n`;
   
   if (data.chiPhi && data.chiPhi.length > 0) {
