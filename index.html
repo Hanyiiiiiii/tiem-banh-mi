@@ -243,6 +243,42 @@
   .day.empty { cursor: default; pointer-events: none; }
   .day:not(.empty):active { transform: scale(0.9); }
   
+  /* Ngày siêu tốt — xanh dương (≥50) */
+  .day.blue-sale::before {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+    border-radius: 50%;
+    background: 
+      radial-gradient(circle at 30% 40%, rgba(25,118,210,0.55) 0%, rgba(25,118,210,0.35) 60%, rgba(25,118,210,0.55) 100%);
+    z-index: 1;
+    mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    mask-composite: intersect;
+    -webkit-mask-image: 
+      repeating-linear-gradient(45deg, black, black 2px, transparent 2px, transparent 3px),
+      repeating-linear-gradient(-45deg, black, black 3px, transparent 3px, transparent 4px);
+    -webkit-mask-composite: source-in;
+  }
+  .day.blue-sale .dot { background: #1976D2; }
+  .day.blue-sale::after {
+    content: '';
+    position: absolute;
+    top: 2%;
+    left: 2%;
+    right: 2%;
+    bottom: 2%;
+    border-radius: 50%;
+    border: 2.5px solid #1976D2;
+    z-index: 2;
+    filter: url(#crayon-wobble);
+    opacity: 0.85;
+  }
+  
   .day.green::before {
     content: '';
     position: absolute;
@@ -389,7 +425,7 @@
   .legend {
     display: flex;
     justify-content: center;
-    gap: 14px;
+    gap: 10px;
     padding: 16px 0 0;
     font-size: 11px;
     color: #666;
@@ -813,7 +849,8 @@
   <div class="calendar" id="calendar"></div>
   
   <div class="legend">
-    <span><div class="swatch" style="background:#C8E6C9; color:#2E7D32"></div> ≥28</span>
+    <span><div class="swatch" style="background:#BBDEFB; color:#1976D2"></div> ≥50</span>
+    <span><div class="swatch" style="background:#C8E6C9; color:#2E7D32"></div> 28-49</span>
     <span><div class="swatch" style="background:#FFF3B0; color:#F9A825"></div> 20-27</span>
     <span><div class="swatch" style="background:#FFCDD2; color:#C62828"></div> &lt;20</span>
   </div>
@@ -1022,7 +1059,8 @@ function renderCalendar() {
     
     if (dayData && !isDayEmpty(dayData)) {
       const sold = dayData.tongBanhBan;
-      if (sold >= 28) dayEl.classList.add('green');
+      if (sold >= 50) dayEl.classList.add('blue-sale');
+      else if (sold >= 28) dayEl.classList.add('green');
       else if (sold >= 20) dayEl.classList.add('yellow');
       else dayEl.classList.add('red');
     }
@@ -1337,7 +1375,7 @@ async function closeDayModal() {
 function showMonthSummary() {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   let tongDoanhThu = 0, tongBanh = 0, tongChiPhiHangNgay = 0;
-  let ngayTot = 0, ngayThuong = 0, ngayE = 0, soNgay = 0;
+  let ngaySieuTot = 0, ngayTot = 0, ngayThuong = 0, ngayE = 0, soNgay = 0;
   let bestDay = null, worstDay = null;
   
   for (let d = 1; d <= daysInMonth; d++) {
@@ -1349,7 +1387,8 @@ function showMonthSummary() {
     tongBanh += r.tongBanhBan || 0;
     tongChiPhiHangNgay += r.tongChiPhi || 0;
     
-    if (r.tongBanhBan >= 28) ngayTot++;
+    if (r.tongBanhBan >= 50) ngaySieuTot++;
+    else if (r.tongBanhBan >= 28) ngayTot++;
     else if (r.tongBanhBan >= 20) ngayThuong++;
     else ngayE++;
     
@@ -1421,7 +1460,8 @@ function showMonthSummary() {
     <div class="result-row"><span class="label">Số ngày có dữ liệu</span><span class="value">${soNgay} ngày</span></div>
     <div class="result-row"><span class="label">Tổng bánh bán</span><span class="value">${tongBanh} cái</span></div>
     <div class="result-row"><span class="label">Trung bình bán/ngày</span><span class="value">${soNgay ? Math.round(tongBanh/soNgay) : 0} cái</span></div>
-    <div class="result-row"><span class="label">🟢 Ngày tốt (≥28)</span><span class="value">${ngayTot} ngày</span></div>
+    <div class="result-row"><span class="label">🔵 Ngày siêu tốt (≥50)</span><span class="value">${ngaySieuTot} ngày</span></div>
+    <div class="result-row"><span class="label">🟢 Ngày tốt (28-49)</span><span class="value">${ngayTot} ngày</span></div>
     <div class="result-row"><span class="label">🟡 Ngày thường (20-27)</span><span class="value">${ngayThuong} ngày</span></div>
     <div class="result-row"><span class="label">🔴 Ngày ế (&lt;20)</span><span class="value">${ngayE} ngày</span></div>
     ${bestDay ? `<div class="result-row"><span class="label">🏆 Bán chạy nhất</span><span class="value">${bestDay.d}/${currentMonth+1} (${bestDay.sold} cái)</span></div>` : ''}
