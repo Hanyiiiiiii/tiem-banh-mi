@@ -3,6 +3,10 @@
 
 const admin = require('firebase-admin');
 const { parseMessage, formatConfirmation } = require('./parser');
+export const config = {
+  memory: 1024,
+  maxDuration: 10
+};
 
 // ============ CẤU HÌNH ============
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8874977011:AAFzNvm70I6NfaETG4bSqnnKlPRbjDD7TyA';
