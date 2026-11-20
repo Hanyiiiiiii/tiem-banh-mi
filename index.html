@@ -883,9 +883,10 @@
 <!-- Modal Lịch sử nhập hàng -->
 <div class="modal-overlay" id="purchaseModal">
   <div class="modal">
-  <h2 style="justify-content: flex-end; margin-bottom: 0;">
-  <button class="close" onclick="closePurchaseModal()">✕</button>
-</h2>
+  <h2 style="justify-content: space-between; margin-bottom: 0;">
+    <button class="btn-secondary" onclick="showPurchaseSummary()" style="width: auto; margin-top: 0; padding: 8px 12px; font-size: 13px;">Tổng kết tháng</button>
+    <button class="close" onclick="closePurchaseModal()">✕</button>
+  </h2>
     
     <div class="cal-header" style="margin-bottom: 16px;">
       <button class="nav-btn prev" onclick="changePurchaseMonth(-1)">‹</button>
@@ -922,6 +923,18 @@
     </h2>
     <div id="purchaseDayContent"></div>
     <div id="purchaseDayButtonArea"></div>
+  </div>
+</div>
+
+<!-- Modal Tổng kết nhập hàng -->
+<div class="modal-overlay" id="purchaseSummaryModal">
+  <div class="modal">
+    <h2>
+      <span id="purchaseSummaryTitle">Tổng kết nhập hàng</span>
+      <button class="close" onclick="closePurchaseSummaryModal()">✕</button>
+    </h2>
+    <div id="purchaseSummaryContent"></div>
+    <button class="btn-secondary" onclick="closePurchaseSummaryModal()">Đóng</button>
   </div>
 </div>
 
@@ -1379,7 +1392,7 @@ async function closeDayModal() {
   isEditMode = false;
 }
 
-// ============ TỔNG KẾT THÁNG ============// ============ TỔNG KẾT THÁNG ============
+// ============ TỔNG KẾT THÁNG ============
 function showMonthSummary() {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   let tongTienCatDi = 0; 
@@ -1388,7 +1401,6 @@ function showMonthSummary() {
   let ngaySieuTot = 0, ngayTot = 0, ngayThuong = 0, ngayE = 0, soNgay = 0;
   let bestDay = null, worstDay = null;
   
-  // Biến đếm số lượng từng loại bánh
   let tongBanhKhong = 0;
   let tongBanh15 = 0;
   let tongBanh20 = 0;
@@ -1396,7 +1408,6 @@ function showMonthSummary() {
   let tongBanh30 = 0;
   let tongNuoc = 0;
 
-  // Lặp qua từng ngày để lấy số liệu
   for (let d = 1; d <= daysInMonth; d++) {
     const key = dateKey(currentYear, currentMonth, d);
     const r = data[key];
@@ -1406,7 +1417,6 @@ function showMonthSummary() {
     tongBanh += r.tongBanhBan || 0;
     tongChiPhiHangNgay += r.tongChiPhi || 0;
     
-    // Cộng dồn số lượng từng loại
     tongBanhKhong += r.banhKhong || 0;
     tongBanh15 += r.banh15 || 0;
     tongBanh20 += r.banh20 || 0;
@@ -1423,21 +1433,16 @@ function showMonthSummary() {
     if (!worstDay || r.tongBanhBan < worstDay.sold) worstDay = { d, sold: r.tongBanhBan };
   }
   
-  // 1. Lấy chi phí Cost tổng (Đã bao gồm nguyên liệu + bao bì + điện nước)
   const chiPhiLayHangTheoThang = tinhChiPhiLayHangTheoThang(null, data);
   const thangKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
   const chiPhiLayHang = chiPhiLayHangTheoThang[thangKey] || 0;
   
-  // 2. TỔNG DOANH THU THỰC
   const doanhThuThuc = tongTienCatDi + tongChiPhiHangNgay;
-  
-  // 3. LÃI RÒNG
   const laiRong = doanhThuThuc - chiPhiLayHang;
   
   const tyLeLai = doanhThuThuc > 0 ? (laiRong / doanhThuThuc * 100) : 0;
   const laiRongColor = laiRong >= 0 ? '#2E7D32' : '#C62828';
   
-  // Hàm tính % cho từng loại
   const pt = (soLuong) => tongBanh > 0 ? (soLuong / tongBanh * 100).toFixed(1) : '0.0';
 
   const html = `
@@ -1691,8 +1696,6 @@ let currentPurchaseKey = null;
 let currentPurchaseData = null;
 let purchaseEditMode = false;
 
-// ... (Các hàm openPurchaseModal, renderPurchaseCalendar giữ nguyên)
-
 async function openPurchaseModal() {
   if (typeof loadPurchasesFromFirebase === 'function' && firebaseReady && !purchasesLoaded) {
     const fbData = await loadPurchasesFromFirebase();
@@ -1893,27 +1896,177 @@ function renderPurchaseMatHang() {
     row.innerHTML = `
       <div style="flex: 1 1 40%; font-size: 14px; font-weight: 600; color: #333;">${item.ten}</div>
       
-      <input type="number" class="num" value="${item.soLuong || 0}" placeholder="SL" style="flex: 1 1 20%; text-align: right; margin-right: 4px;" inputmode="numeric">
+      <input type="number" class="num sl-input" value="${item.soLuong || 0}" placeholder="SL" style="flex: 1 1 20%; text-align: right; margin-right: 4px; padding: 6px; border: 2px solid #FFE0B2; border-radius: 8px;" inputmode="numeric">
       
       <div style="flex: 0 0 35px; font-size: 12px; color: #666; text-align: center;">${donVi}</div>
       
-      <input type="number" class="num" value="${item.donGia || 0}" placeholder="Đơn giá" style="flex: 1 1 30%; text-align: right; font-size: 12px;" inputmode="numeric">
+      <input type="number" class="num gia-input" value="${item.donGia || 0}" placeholder="Đơn giá" style="flex: 1 1 30%; text-align: right; font-size: 12px; padding: 6px; border: 2px solid #FFE0B2; border-radius: 8px;" inputmode="numeric">
     `;
     
-    // Cập nhật số lượng khi gõ
-    row.querySelectorAll('input')[0].addEventListener('input', (e) => {
+    // Gắn sự kiện cho ô nhập Số lượng
+    row.querySelector('.sl-input').addEventListener('input', (e) => {
       currentPurchaseData.matHang[idx].soLuong = +e.target.value || 0;
       recalcPurchase();
     });
 
-    // Cập nhật đơn giá khi gõ
-    row.querySelectorAll('input')[1].addEventListener('input', (e) => {
+    // Gắn sự kiện cho ô nhập Đơn giá
+    row.querySelector('.gia-input').addEventListener('input', (e) => {
       currentPurchaseData.matHang[idx].donGia = +e.target.value || 0;
       recalcPurchase();
     });
     
     list.appendChild(row);
   });
+}
+
+async function savePurchase() {
+  recalcPurchase();
+  
+  // Lọc bỏ các món không có tên
+  currentPurchaseData.matHang = (currentPurchaseData.matHang || []).filter(m => m.ten && m.ten.trim() !== '');
+  
+  if (currentPurchaseData.matHang.length === 0) {
+    alert('Vui lòng chọn ít nhất 1 mặt hàng');
+    return;
+  }
+  
+  if (typeof savePurchaseToFirebase === 'function' && firebaseReady) {
+    try {
+      await savePurchaseToFirebase(currentPurchaseKey, currentPurchaseData);
+      alert('✅ Đã lưu');
+      closePurchaseDayModal();
+    } catch (err) {
+      alert('❌ Lỗi lưu: ' + err.message);
+    }
+  } else {
+    alert('❌ Firebase chưa sẵn sàng');
+  }
+}
+
+async function deletePurchase() {
+  if (!confirm('Xóa lần nhập hàng này?')) return;
+  if (typeof deletePurchaseFromFirebase === 'function' && firebaseReady) {
+    try {
+      await deletePurchaseFromFirebase(currentPurchaseKey);
+      alert('🗑️ Đã xóa');
+      closePurchaseDayModal();
+    } catch (err) {
+      alert('❌ Lỗi xóa: ' + err.message);
+    }
+  }
+}
+
+function uploadHoaDon() {
+  document.getElementById('hoaDonInput').click();
+}
+
+async function handleHoaDonUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (typeof processHoaDonImage !== 'function') {
+    alert('❌ OCR chưa sẵn sàng');
+    return;
+  }
+  
+  const btnEl = event.target.parentElement.querySelector('button');
+  const originalText = btnEl.textContent;
+  btnEl.textContent = '⏳ Đang đọc hóa đơn...';
+  btnEl.disabled = true;
+  
+  try {
+    const parsed = await processHoaDonImage(file);
+    
+    if (parsed.matHang && parsed.matHang.length > 0) {
+      const msg = `Đọc được ${parsed.matHang.length} mặt hàng:\n\n` +
+        parsed.matHang.map(m => `• ${m.ten}: ${m.soLuong} × ${m.donGia.toLocaleString('vi-VN')}`).join('\n') +
+        `\n\nThêm vào form?`;
+      
+      if (confirm(msg)) {
+        currentPurchaseData.matHang = parsed.matHang.map(m => ({
+          ten: m.ten,
+          soLuong: m.soLuong,
+          donGia: m.donGia
+        }));
+        renderPurchaseMatHang();
+        recalcPurchase();
+      }
+    } else {
+      alert('⚠️ Không đọc được mặt hàng nào. Vui lòng nhập tay.');
+    }
+  } catch (err) {
+    alert('❌ Lỗi OCR: ' + err.message);
+  } finally {
+    btnEl.textContent = originalText;
+    btnEl.disabled = false;
+    event.target.value = '';
+  }
+}
+
+// ============ TỔNG KẾT NHẬP HÀNG THEO THÁNG ============
+function showPurchaseSummary() {
+  let html = '';
+  let tongThang = 0;
+  
+  const monthKey = `${purchaseYear}-${String(purchaseMonth+1).padStart(2, '0')}`;
+  
+  // Lấy tất cả các ngày trong tháng hiện tại (của purchase)
+  const daysInMonth = new Date(purchaseYear, purchaseMonth + 1, 0).getDate();
+  
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = `${purchaseYear}-${String(purchaseMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let pData = null;
+    if (typeof purchasesCache !== 'undefined' && purchasesCache[key]) {
+      pData = purchasesCache[key];
+    } else if (typeof PURCHASES !== 'undefined') {
+      pData = PURCHASES.find(p => p.ngay === key);
+    }
+    
+    if (pData && pData.matHang && pData.matHang.some(m => m.soLuong > 0)) {
+      let tongNgay = 0;
+      let chiTiet = '';
+      
+      pData.matHang.forEach(m => {
+        if (m.soLuong > 0) {
+          const tien = m.soLuong * m.donGia;
+          tongNgay += tien;
+          chiTiet += `  - ${m.ten}: ${m.soLuong} × ${m.donGia.toLocaleString('vi-VN')} = ${tien.toLocaleString('vi-VN')}đ\n`;
+        }
+      });
+      
+      if (pData.ship) {
+        tongNgay += pData.ship;
+        chiTiet += `  - Ship: ${pData.ship.toLocaleString('vi-VN')}đ\n`;
+      }
+      
+      tongThang += tongNgay;
+      
+      html += `<div style="background: #F9F9F9; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px dashed #ddd; padding-bottom: 6px; margin-bottom: 6px;">
+          <span>Ngày ${d}/${purchaseMonth+1}</span>
+          <span style="color: #C62828;">${tongNgay.toLocaleString('vi-VN')}đ</span>
+        </div>
+        <div style="font-size: 13px; color: #555; white-space: pre-wrap;">${chiTiet.trim()}</div>
+      </div>`;
+    }
+  }
+  
+  if (!html) {
+    html = '<div style="text-align: center; color: #999; padding: 20px;">Chưa có dữ liệu nhập hàng trong tháng này</div>';
+  } else {
+    html += `<div class="result-row" style="border-top: 2px solid #FFC107; margin-top: 16px; padding-top: 12px;">
+      <span class="label" style="font-size: 16px;"><b>TỔNG CỘNG THÁNG ${purchaseMonth+1}</b></span>
+      <span class="value" style="font-size: 18px; color: #C62828;"><b>${tongThang.toLocaleString('vi-VN')}đ</b></span>
+    </div>`;
+  }
+  
+  document.getElementById('purchaseSummaryTitle').textContent = `Tổng kết nhập hàng tháng ${purchaseMonth+1}/${purchaseYear}`;
+  document.getElementById('purchaseSummaryContent').innerHTML = html;
+  document.getElementById('purchaseSummaryModal').classList.add('active');
+}
+
+function closePurchaseSummaryModal() { 
+  document.getElementById('purchaseSummaryModal').classList.remove('active'); 
 }
 
 // ============ RANDOM CÁC CON VẬT ============
