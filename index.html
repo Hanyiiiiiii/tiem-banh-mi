@@ -240,7 +240,9 @@
   .day.sun .num { color: #E6A000; }
   .day.sat .num { color: #E6A000; }
   
+  /* SỬA LỖI CLICK Ở ĐÂY */
   .day.empty { cursor: default; pointer-events: none; }
+  .day:not(.empty) { cursor: pointer; pointer-events: auto; }
   .day:not(.empty):active { transform: scale(0.9); }
   
   /* Ngày siêu tốt — xanh dương (≥50) */
@@ -1698,10 +1700,14 @@ let purchaseEditMode = false;
 
 async function openPurchaseModal() {
   if (typeof loadPurchasesFromFirebase === 'function' && firebaseReady && !purchasesLoaded) {
-    const fbData = await loadPurchasesFromFirebase();
-    if (fbData) {
-      purchasesCache = fbData;
-      purchasesLoaded = true;
+    try {
+      const fbData = await loadPurchasesFromFirebase();
+      if (fbData) {
+        purchasesCache = fbData;
+        purchasesLoaded = true;
+      }
+    } catch (e) {
+      console.warn('Lỗi load Firebase:', e);
     }
   }
   
@@ -1756,46 +1762,67 @@ function renderPurchaseCalendar() {
     if (hasPurchase) dayEl.classList.add('blue');
     
     dayEl.innerHTML = `<div class="num">${d}</div><div class="dot"></div>`;
-    dayEl.onclick = () => openPurchaseDayModal(key);
+    
+    // Gắn sự kiện click chuẩn xác
+    dayEl.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openPurchaseDayModal(key);
+    };
+    
     cal.appendChild(dayEl);
   }
 }
 
 async function openPurchaseDayModal(key) {
-  currentPurchaseKey = key;
-  purchaseEditMode = false;
-  
-  const [y, m, d] = key.split('-');
-  document.getElementById('purchaseDayTitle').textContent = `📦 Nhập hàng ngày ${parseInt(d)}/${parseInt(m)}/${y}`;
-  
-  let dataPurchase = null;
-  if (typeof purchasesCache !== 'undefined' && purchasesCache[key]) {
-    dataPurchase = purchasesCache[key];
-  } else if (typeof PURCHASES !== 'undefined') {
-    const found = PURCHASES.find(p => p.ngay === key);
-    if (found) dataPurchase = found;
+  try {
+    currentPurchaseKey = key;
+    purchaseEditMode = false;
+    
+    const [y, m, d] = key.split('-');
+    document.getElementById('purchaseDayTitle').textContent = `📦 Nhập hàng ngày ${parseInt(d)}/${parseInt(m)}/${y}`;
+    
+    let dataPurchase = null;
+    if (typeof purchasesCache !== 'undefined' && purchasesCache[key]) {
+      dataPurchase = purchasesCache[key];
+    } else if (typeof PURCHASES !== 'undefined') {
+      const found = PURCHASES.find(p => p.ngay === key);
+      if (found) dataPurchase = found;
+    }
+    
+    if (dataPurchase) {
+      currentPurchaseData = JSON.parse(JSON.stringify(dataPurchase));
+      // Đảm bảo mọi mặt hàng trong danh mục đều có mặt để hiển thị
+      const existingItems = currentPurchaseData.matHang || [];
+      currentPurchaseData.matHang = DANH_MUC_HANG.map(dm => {
+        const found = existingItems.find(ei => ei.ten === dm.ten);
+        return {
+          ten: dm.ten,
+          soLuong: found ? found.soLuong : 0,
+          donGia: found ? found.donGia : dm.donGia
+        };
+      });
+      renderPurchaseDayView();
+    } else {
+      currentPurchaseData = {
+        ngay: key,
+        matHang: DANH_MUC_HANG.map(item => ({
+          ten: item.ten,
+          soLuong: 0,
+          donGia: item.donGia
+        })),
+        ship: 0,
+        ghiChu: ''
+      };
+      purchaseEditMode = true;
+      renderPurchaseDayForm();
+    }
+    
+    document.getElementById('purchaseDayModal').classList.add('active');
+  } catch (err) {
+    console.error("Lỗi mở ngày nhập hàng:", err);
+    alert("Có lỗi xảy ra khi mở ngày này, vui lòng thử lại!");
   }
-  
-  if (dataPurchase) {
-    currentPurchaseData = JSON.parse(JSON.stringify(dataPurchase));
-    renderPurchaseDayView();
-  } else {
-    // Mặc định khi tạo mới: Điền sẵn toàn bộ danh sách mặt hàng
-    currentPurchaseData = {
-      ngay: key,
-      matHang: DANH_MUC_HANG.map(item => ({
-        ten: item.ten,
-        soLuong: 0,
-        donGia: item.donGia
-      })),
-      ship: 0,
-      ghiChu: ''
-    };
-    purchaseEditMode = true;
-    renderPurchaseDayForm();
-  }
-  
-  document.getElementById('purchaseDayModal').classList.add('active');
 }
 
 function closePurchaseDayModal() {
@@ -1815,11 +1842,11 @@ function renderPurchaseDayView() {
     const tien = (m.soLuong || 0) * (m.donGia || 0);
     tong += tien;
     
-    // Tìm đơn vị tính
-    const danhMuc = DANH_MUC_HANG.find(dm => dm.ten === m.ten);
-    const donVi = danhMuc ? danhMuc.donVi : 'kg';
-    
-    html += `<div class="result-row"><span class="label">${m.ten} — ${m.soLuong} ${donVi} × ${(m.donGia || 0).toLocaleString('vi-VN')}</span><span class="value">${tien.toLocaleString('vi-VN')}đ</span></div>`;
+    if (m.soLuong > 0 || m.donGia > 0) {
+      const danhMuc = DANH_MUC_HANG.find(dm => dm.ten === m.ten);
+      const donVi = danhMuc ? danhMuc.donVi : 'kg';
+      html += `<div class="result-row"><span class="label">${m.ten} — ${m.soLuong} ${donVi} × ${(m.donGia || 0).toLocaleString('vi-VN')}</span><span class="value">${tien.toLocaleString('vi-VN')}đ</span></div>`;
+    }
   });
   
   if (r.ship) {
