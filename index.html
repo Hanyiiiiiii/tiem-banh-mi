@@ -1783,27 +1783,40 @@ async function openPurchaseDayModal(key) {
     document.getElementById('purchaseDayTitle').textContent = `📦 Nhập hàng ngày ${parseInt(d)}/${parseInt(m)}/${y}`;
     
     let dataPurchase = null;
-    if (typeof purchasesCache !== 'undefined' && purchasesCache[key]) {
+    
+    // Kiểm tra an toàn dữ liệu cũ
+    if (typeof purchasesCache !== 'undefined' && purchasesCache && purchasesCache[key]) {
       dataPurchase = purchasesCache[key];
-    } else if (typeof PURCHASES !== 'undefined') {
-      const found = PURCHASES.find(p => p.ngay === key);
+    } else if (typeof PURCHASES !== 'undefined' && Array.isArray(PURCHASES)) {
+      const found = PURCHASES.find(p => p && p.ngay === key);
       if (found) dataPurchase = found;
     }
     
     if (dataPurchase) {
+      // Nếu ngày này đã có dữ liệu nhập hàng
       currentPurchaseData = JSON.parse(JSON.stringify(dataPurchase));
-      // Đảm bảo mọi mặt hàng trong danh mục đều có mặt để hiển thị
-      const existingItems = currentPurchaseData.matHang || [];
+      
+      // Đảm bảo matHang là một mảng hợp lệ
+      if (!Array.isArray(currentPurchaseData.matHang)) {
+        currentPurchaseData.matHang = [];
+      }
+      
+      // Lọc bỏ các phần tử lỗi (null/undefined) đề phòng dữ liệu cũ bị hỏng
+      const existingItems = currentPurchaseData.matHang.filter(ei => ei && ei.ten);
+      
+      // Map lại theo danh mục chuẩn để đảm bảo hiển thị đầy đủ
       currentPurchaseData.matHang = DANH_MUC_HANG.map(dm => {
         const found = existingItems.find(ei => ei.ten === dm.ten);
         return {
           ten: dm.ten,
-          soLuong: found ? found.soLuong : 0,
-          donGia: found ? found.donGia : dm.donGia
+          soLuong: found ? (Number(found.soLuong) || 0) : 0,
+          donGia: found ? (Number(found.donGia) || dm.donGia) : dm.donGia
         };
       });
+      
       renderPurchaseDayView();
     } else {
+      // Nếu là ngày mới, khởi tạo dữ liệu trống
       currentPurchaseData = {
         ngay: key,
         matHang: DANH_MUC_HANG.map(item => ({
@@ -1821,7 +1834,7 @@ async function openPurchaseDayModal(key) {
     document.getElementById('purchaseDayModal').classList.add('active');
   } catch (err) {
     console.error("Lỗi mở ngày nhập hàng:", err);
-    alert("Có lỗi xảy ra khi mở ngày này, vui lòng thử lại!");
+    alert("Có lỗi xảy ra: " + err.message); 
   }
 }
 
