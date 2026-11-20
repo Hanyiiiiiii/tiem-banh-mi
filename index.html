@@ -1663,23 +1663,32 @@ try {
 } catch (e) {}
 
 // ============ LỊCH SỬ NHẬP HÀNG ============
+// ============ LỊCH SỬ NHẬP HÀNG ============
 let purchaseMonth = TODAY.getMonth();
 let purchaseYear = TODAY.getFullYear();
 let currentPurchaseKey = null;
 let currentPurchaseData = null;
 let purchaseEditMode = false;
 
-// DANH MỤC MẶT HÀNG CÓ SẴN KÈM ĐƠN GIÁ (Lấy từ bảng Excel của bạn)
+// DANH MỤC MẶT HÀNG CÓ SẴN KÈM ĐƠN GIÁ VÀ ĐƠN VỊ TÍNH
 const DANH_MUC_HANG = [
-  { ten: 'Bơ', donGia: 75000 },
-  { ten: 'Patê', donGia: 82000 },
-  { ten: 'Nem nướng', donGia: 95000 },
-  { ten: 'Xúc xích tỏi cắt', donGia: 85000 },
-  { ten: 'Giò thủ cắt', donGia: 85000 },
-  { ten: 'Giò lụa cắt', donGia: 87000 },
-  { ten: 'Da bao trắng cắt', donGia: 120000 },
-  { ten: 'Ruốc xù ngọt', donGia: 135000 },
-  { ten: 'Giò bò cắt', donGia: 90000 }
+  { ten: 'Bơ', donGia: 75000, donVi: 'kg' },
+  { ten: 'Patê', donGia: 82000, donVi: 'kg' },
+  { ten: 'Nem nướng', donGia: 95000, donVi: 'kg' },
+  { ten: 'Xúc xích tỏi cắt', donGia: 85000, donVi: 'kg' },
+  { ten: 'Giò thủ cắt', donGia: 85000, donVi: 'kg' },
+  { ten: 'Giò lụa cắt', donGia: 87000, donVi: 'kg' },
+  { ten: 'Da bao trắng cắt', donGia: 120000, donVi: 'kg' },
+  { ten: 'Ruốc xù ngọt', donGia: 135000, donVi: 'kg' },
+  { ten: 'Giò bò cắt', donGia: 90000, donVi: 'kg' },
+  // Các mặt hàng mới thêm vào
+  { ten: 'Túi giấy đựng bánh mì', donGia: 0, donVi: 'cái' },
+  { ten: 'Khăn ướt', donGia: 0, donVi: 'cái' },
+  { ten: 'Túi nylon', donGia: 0, donVi: 'cân' },
+  { ten: 'Cốc', donGia: 0, donVi: 'lốc' },
+  { ten: 'Giấy rút', donGia: 0, donVi: 'thùng' },
+  { ten: 'Attiso', donGia: 0, donVi: 'lít' },
+  { ten: 'Dâu tằm', donGia: 0, donVi: 'lít' }
 ];
 
 async function openPurchaseModal() {
@@ -1766,7 +1775,7 @@ async function openPurchaseDayModal(key) {
     currentPurchaseData = JSON.parse(JSON.stringify(dataPurchase));
     renderPurchaseDayView();
   } else {
-    // Mặc định khi tạo mới: Điền sẵn danh sách mặt hàng
+    // Mặc định khi tạo mới: Điền sẵn toàn bộ danh sách mặt hàng
     currentPurchaseData = {
       ngay: key,
       matHang: DANH_MUC_HANG.map(item => ({
@@ -1800,7 +1809,12 @@ function renderPurchaseDayView() {
   (r.matHang || []).forEach(m => {
     const tien = (m.soLuong || 0) * (m.donGia || 0);
     tong += tien;
-    html += `<div class="result-row"><span class="label">${m.ten} — ${m.soLuong} × ${(m.donGia || 0).toLocaleString('vi-VN')}</span><span class="value">${tien.toLocaleString('vi-VN')}đ</span></div>`;
+    
+    // Tìm đơn vị tính
+    const danhMuc = DANH_MUC_HANG.find(dm => dm.ten === m.ten);
+    const donVi = danhMuc ? danhMuc.donVi : 'kg';
+    
+    html += `<div class="result-row"><span class="label">${m.ten} — ${m.soLuong} ${donVi} × ${(m.donGia || 0).toLocaleString('vi-VN')}</span><span class="value">${tien.toLocaleString('vi-VN')}đ</span></div>`;
   });
   
   if (r.ship) {
@@ -1830,7 +1844,7 @@ function renderPurchaseDayForm() {
       <button class="btn-secondary" onclick="uploadHoaDon()" style="background: #E3F2FD; border-color: #1976D2; color: #1976D2; font-size: 14px;">📷 Upload hóa đơn (OCR)</button>
       <input type="file" id="hoaDonInput" accept="image/*" style="display: none;" onchange="handleHoaDonUpload(event)">
     </div>
-    <div class="section-title">📥 MẶT HÀNG (Chỉ cần nhập số kg)</div>
+    <div class="section-title">📥 MẶT HÀNG (Nhập số lượng)</div>
     <div id="purchaseMatHangList"></div>
     
     <div class="row" style="margin-top: 12px;">
@@ -1865,136 +1879,39 @@ function renderPurchaseMatHang() {
   currentPurchaseData.matHang.forEach((item, idx) => {
     const row = document.createElement('div');
     row.className = 'item-row';
-    row.style.flexWrap = 'nowrap'; // Giữ trên 1 dòng
+    row.style.flexWrap = 'nowrap'; 
     row.style.alignItems = 'center';
     row.style.padding = '4px 0';
     
-    // Giao diện dòng: Tên (cố định) - Số kg (nhập) - Đơn giá (cố định)
+    // Tìm đơn vị tính của mặt hàng này từ DANH_MUC_HANG
+    const danhMuc = DANH_MUC_HANG.find(dm => dm.ten === item.ten);
+    const donVi = danhMuc ? danhMuc.donVi : 'kg';
+
+    // Giao diện dòng: Tên (cố định) - Số lượng (nhập) - Đơn vị (tự động) - Đơn giá (có thể sửa)
     row.innerHTML = `
       <div style="flex: 1 1 40%; font-size: 14px; font-weight: 600; color: #333;">${item.ten}</div>
-      <input type="number" class="num" value="${item.soLuong || 0}" placeholder="Số kg" style="flex: 1 1 25%; text-align: right; margin-right: 4px;" inputmode="numeric">
-      <div style="flex: 0 0 70px; font-size: 12px; color: #888; text-align: right;">${(item.donGia || 0).toLocaleString('vi-VN')}</div>
+      
+      <input type="number" class="num" value="${item.soLuong || 0}" placeholder="SL" style="flex: 1 1 20%; text-align: right; margin-right: 4px;" inputmode="numeric">
+      
+      <div style="flex: 0 0 35px; font-size: 12px; color: #666; text-align: center;">${donVi}</div>
+      
+      <input type="number" class="num" value="${item.donGia || 0}" placeholder="Đơn giá" style="flex: 1 1 30%; text-align: right; font-size: 12px;" inputmode="numeric">
     `;
     
-    // Chỉ cho phép nhập Số kg
-    row.querySelector('input').addEventListener('input', (e) => {
+    // Cập nhật số lượng khi gõ
+    row.querySelectorAll('input')[0].addEventListener('input', (e) => {
       currentPurchaseData.matHang[idx].soLuong = +e.target.value || 0;
+      recalcPurchase();
+    });
+
+    // Cập nhật đơn giá khi gõ
+    row.querySelectorAll('input')[1].addEventListener('input', (e) => {
+      currentPurchaseData.matHang[idx].donGia = +e.target.value || 0;
       recalcPurchase();
     });
     
     list.appendChild(row);
   });
-}
-
-function recalcPurchase() {
-  const r = currentPurchaseData;
-  if (!r) return;
-  
-  const shipEl = document.getElementById('p_ship');
-  const ghiChuEl = document.getElementById('p_ghiChu');
-  if (shipEl) r.ship = +shipEl.value || 0;
-  if (ghiChuEl) r.ghiChu = ghiChuEl.value;
-  
-  let tong = r.ship;
-  (r.matHang || []).forEach(m => {
-    tong += (m.soLuong || 0) * (m.donGia || 0);
-  });
-  
-  const tongEl = document.getElementById('p_tong');
-  if (tongEl) tongEl.innerHTML = `<b>${tong.toLocaleString('vi-VN')}đ</b>`;
-}
-
-function enablePurchaseEdit() {
-  purchaseEditMode = true;
-  renderPurchaseDayForm();
-}
-
-function cancelPurchaseEdit() {
-  closePurchaseDayModal();
-}
-
-async function savePurchase() {
-  recalcPurchase();
-  
-  // Lọc bỏ các món không có tên
-  currentPurchaseData.matHang = (currentPurchaseData.matHang || []).filter(m => m.ten && m.ten.trim() !== '');
-  
-  if (currentPurchaseData.matHang.length === 0) {
-    alert('Vui lòng chọn ít nhất 1 mặt hàng');
-    return;
-  }
-  
-  if (typeof savePurchaseToFirebase === 'function' && firebaseReady) {
-    try {
-      await savePurchaseToFirebase(currentPurchaseKey, currentPurchaseData);
-      alert('✅ Đã lưu');
-      closePurchaseDayModal();
-    } catch (err) {
-      alert('❌ Lỗi lưu: ' + err.message);
-    }
-  } else {
-    alert('❌ Firebase chưa sẵn sàng');
-  }
-}
-
-async function deletePurchase() {
-  if (!confirm('Xóa lần nhập hàng này?')) return;
-  if (typeof deletePurchaseFromFirebase === 'function' && firebaseReady) {
-    try {
-      await deletePurchaseFromFirebase(currentPurchaseKey);
-      alert('🗑️ Đã xóa');
-      closePurchaseDayModal();
-    } catch (err) {
-      alert('❌ Lỗi xóa: ' + err.message);
-    }
-  }
-}
-
-function uploadHoaDon() {
-  document.getElementById('hoaDonInput').click();
-}
-
-async function handleHoaDonUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  if (typeof processHoaDonImage !== 'function') {
-    alert('❌ OCR chưa sẵn sàng');
-    return;
-  }
-  
-  const btnEl = event.target.parentElement.querySelector('button');
-  const originalText = btnEl.textContent;
-  btnEl.textContent = '⏳ Đang đọc hóa đơn...';
-  btnEl.disabled = true;
-  
-  try {
-    const parsed = await processHoaDonImage(file);
-    
-    if (parsed.matHang && parsed.matHang.length > 0) {
-      const msg = `Đọc được ${parsed.matHang.length} mặt hàng:\n\n` +
-        parsed.matHang.map(m => `• ${m.ten}: ${m.soLuong} × ${m.donGia.toLocaleString('vi-VN')}`).join('\n') +
-        `\n\nThêm vào form?`;
-      
-      if (confirm(msg)) {
-        currentPurchaseData.matHang = parsed.matHang.map(m => ({
-          ten: m.ten,
-          soLuong: m.soLuong,
-          donGia: m.donGia
-        }));
-        renderPurchaseMatHang();
-        recalcPurchase();
-      }
-    } else {
-      alert('⚠️ Không đọc được mặt hàng nào. Vui lòng nhập tay.');
-    }
-  } catch (err) {
-    alert('❌ Lỗi OCR: ' + err.message);
-  } finally {
-    btnEl.textContent = originalText;
-    btnEl.disabled = false;
-    event.target.value = '';
-  }
 }
 
 // ============ RANDOM CÁC CON VẬT ============
