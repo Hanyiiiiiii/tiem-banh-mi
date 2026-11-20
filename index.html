@@ -240,7 +240,6 @@
   .day.sun .num { color: #E6A000; }
   .day.sat .num { color: #E6A000; }
   
-  /* SỬA LỖI CLICK Ở ĐÂY */
   .day.empty { cursor: default; pointer-events: none; }
   .day:not(.empty) { cursor: pointer; pointer-events: auto; }
   .day:not(.empty):active { transform: scale(0.9); }
@@ -1671,7 +1670,6 @@ try {
 
 // ============ LỊCH SỬ NHẬP HÀNG ============
 
-// 1. KHAI BÁO DANH MỤC LÊN TRÊN CÙNG
 const DANH_MUC_HANG = [
   { ten: 'Bơ', donGia: 75000, donVi: 'kg' },
   { ten: 'Patê', donGia: 82000, donVi: 'kg' },
@@ -1691,7 +1689,6 @@ const DANH_MUC_HANG = [
   { ten: 'Dâu tằm', donGia: 0, donVi: 'lít' }
 ];
 
-// 2. SAU ĐÓ MỚI KHAI BÁO CÁC BIẾN KHÁC
 let purchaseMonth = TODAY.getMonth();
 let purchaseYear = TODAY.getFullYear();
 let currentPurchaseKey = null;
@@ -1753,17 +1750,16 @@ function renderPurchaseCalendar() {
     const key = `${purchaseYear}-${String(purchaseMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     
     let hasPurchase = false;
-    if (typeof purchasesCache !== 'undefined' && purchasesCache[key]) {
+    if (typeof purchasesCache !== 'undefined' && purchasesCache && purchasesCache[key]) {
       hasPurchase = true;
-    } else if (typeof PURCHASES !== 'undefined') {
-      hasPurchase = PURCHASES.some(p => p.ngay === key);
+    } else if (typeof PURCHASES !== 'undefined' && Array.isArray(PURCHASES)) {
+      hasPurchase = PURCHASES.some(p => p && p.ngay === key);
     }
     
     if (hasPurchase) dayEl.classList.add('blue');
     
     dayEl.innerHTML = `<div class="num">${d}</div><div class="dot"></div>`;
     
-    // Gắn sự kiện click chuẩn xác
     dayEl.onclick = function(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -1784,7 +1780,6 @@ async function openPurchaseDayModal(key) {
     
     let dataPurchase = null;
     
-    // Kiểm tra an toàn dữ liệu cũ
     if (typeof purchasesCache !== 'undefined' && purchasesCache && purchasesCache[key]) {
       dataPurchase = purchasesCache[key];
     } else if (typeof PURCHASES !== 'undefined' && Array.isArray(PURCHASES)) {
@@ -1793,18 +1788,14 @@ async function openPurchaseDayModal(key) {
     }
     
     if (dataPurchase) {
-      // Nếu ngày này đã có dữ liệu nhập hàng
       currentPurchaseData = JSON.parse(JSON.stringify(dataPurchase));
       
-      // Đảm bảo matHang là một mảng hợp lệ
       if (!Array.isArray(currentPurchaseData.matHang)) {
         currentPurchaseData.matHang = [];
       }
       
-      // Lọc bỏ các phần tử lỗi (null/undefined) đề phòng dữ liệu cũ bị hỏng
       const existingItems = currentPurchaseData.matHang.filter(ei => ei && ei.ten);
       
-      // Map lại theo danh mục chuẩn để đảm bảo hiển thị đầy đủ
       currentPurchaseData.matHang = DANH_MUC_HANG.map(dm => {
         const found = existingItems.find(ei => ei.ten === dm.ten);
         return {
@@ -1816,7 +1807,6 @@ async function openPurchaseDayModal(key) {
       
       renderPurchaseDayView();
     } else {
-      // Nếu là ngày mới, khởi tạo dữ liệu trống
       currentPurchaseData = {
         ngay: key,
         matHang: DANH_MUC_HANG.map(item => ({
@@ -1928,11 +1918,9 @@ function renderPurchaseMatHang() {
     row.style.alignItems = 'center';
     row.style.padding = '4px 0';
     
-    // Tìm đơn vị tính của mặt hàng này từ DANH_MUC_HANG
     const danhMuc = DANH_MUC_HANG.find(dm => dm.ten === item.ten);
     const donVi = danhMuc ? danhMuc.donVi : 'kg';
 
-    // Giao diện dòng: Tên (cố định) - Số lượng (nhập) - Đơn vị (tự động) - Đơn giá (có thể sửa)
     row.innerHTML = `
       <div style="flex: 1 1 40%; font-size: 14px; font-weight: 600; color: #333;">${item.ten}</div>
       
@@ -1943,13 +1931,11 @@ function renderPurchaseMatHang() {
       <input type="number" class="num gia-input" value="${item.donGia || 0}" placeholder="Đơn giá" style="flex: 1 1 30%; text-align: right; font-size: 12px; padding: 6px; border: 2px solid #FFE0B2; border-radius: 8px;" inputmode="numeric">
     `;
     
-    // Gắn sự kiện cho ô nhập Số lượng
     row.querySelector('.sl-input').addEventListener('input', (e) => {
       currentPurchaseData.matHang[idx].soLuong = +e.target.value || 0;
       recalcPurchase();
     });
 
-    // Gắn sự kiện cho ô nhập Đơn giá
     row.querySelector('.gia-input').addEventListener('input', (e) => {
       currentPurchaseData.matHang[idx].donGia = +e.target.value || 0;
       recalcPurchase();
@@ -1959,10 +1945,37 @@ function renderPurchaseMatHang() {
   });
 }
 
+// BỔ SUNG HÀM BỊ THIẾU GÂY LỖI
+function recalcPurchase() {
+  const r = currentPurchaseData;
+  if (!r) return;
+  
+  const shipEl = document.getElementById('p_ship');
+  const ghiChuEl = document.getElementById('p_ghiChu');
+  if (shipEl) r.ship = +shipEl.value || 0;
+  if (ghiChuEl) r.ghiChu = ghiChuEl.value;
+  
+  let tong = r.ship;
+  (r.matHang || []).forEach(m => {
+    tong += (m.soLuong || 0) * (m.donGia || 0);
+  });
+  
+  const tongEl = document.getElementById('p_tong');
+  if (tongEl) tongEl.innerHTML = `<b>${tong.toLocaleString('vi-VN')}đ</b>`;
+}
+
+function enablePurchaseEdit() {
+  purchaseEditMode = true;
+  renderPurchaseDayForm();
+}
+
+function cancelPurchaseEdit() {
+  closePurchaseDayModal();
+}
+
 async function savePurchase() {
   recalcPurchase();
   
-  // Lọc bỏ các món không có tên
   currentPurchaseData.matHang = (currentPurchaseData.matHang || []).filter(m => m.ten && m.ten.trim() !== '');
   
   if (currentPurchaseData.matHang.length === 0) {
@@ -2050,7 +2063,6 @@ function showPurchaseSummary() {
   
   const monthKey = `${purchaseYear}-${String(purchaseMonth+1).padStart(2, '0')}`;
   
-  // Lấy tất cả các ngày trong tháng hiện tại (của purchase)
   const daysInMonth = new Date(purchaseYear, purchaseMonth + 1, 0).getDate();
   
   for (let d = 1; d <= daysInMonth; d++) {
