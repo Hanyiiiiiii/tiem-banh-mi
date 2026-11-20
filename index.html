@@ -1374,7 +1374,9 @@ async function closeDayModal() {
 // ============ TỔNG KẾT THÁNG ============
 function showMonthSummary() {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  let tongDoanhThu = 0, tongBanh = 0, tongChiPhiHangNgay = 0;
+  let tongTienCatDi = 0; 
+  let tongBanh = 0;
+  let tongChiPhiHangNgay = 0; 
   let ngaySieuTot = 0, ngayTot = 0, ngayThuong = 0, ngayE = 0, soNgay = 0;
   let bestDay = null, worstDay = null;
   
@@ -1383,7 +1385,7 @@ function showMonthSummary() {
     const r = data[key];
     if (!r || isDayEmpty(r)) continue;
     soNgay++;
-    tongDoanhThu += r.tienCat || 0;
+    tongTienCatDi += r.tienCat || 0;
     tongBanh += r.tongBanhBan || 0;
     tongChiPhiHangNgay += r.tongChiPhi || 0;
     
@@ -1396,31 +1398,39 @@ function showMonthSummary() {
     if (!worstDay || r.tongBanhBan < worstDay.sold) worstDay = { d, sold: r.tongBanhBan };
   }
   
-  // ⭐ Dùng null để tự động lấy từ Firebase
+  // 1. Chi phí Cost (Nguyên vật liệu chính: thịt, bơ, pate...)
   const chiPhiLayHangTheoThang = tinhChiPhiLayHangTheoThang(null, data);
   const thangKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
   const chiPhiLayHang = chiPhiLayHangTheoThang[thangKey] || 0;
   
+  // 2. Chi phí Bao bì (500đ/cái)
   const baoBiTheoThang = tinhBaoBiTheoThang(PACKAGING, data);
   const baoBi = baoBiTheoThang[thangKey] || 0;
   
-  const doanhThuThuc = tongDoanhThu + tongChiPhiHangNgay;
+  // 3. Tiền điện nước
   const tienDienNuoc = TIEN_DIEN_NUOC;
-  const laiRong = doanhThuThuc - chiPhiLayHang - baoBi - tienDienNuoc;
+  
+  // 4. TỔNG DOANH THU THỰC (Tiền khách trả)
+  // Bằng tiền cất đi + tiền đã chi ra để mua rau, bánh mì hàng ngày
+  const doanhThuThuc = tongTienCatDi + tongChiPhiHangNgay;
+  
+  // 5. TỔNG CHI PHÍ THỰC TẾ (Cost + Bao bì + Điện nước)
+  const tongChiPhiThucTe = chiPhiLayHang + baoBi + tienDienNuoc;
+  
+  // 6. LÃI RÒNG
+  const laiRong = doanhThuThuc - tongChiPhiThucTe;
   
   const tyLeLai = doanhThuThuc > 0 ? (laiRong / doanhThuThuc * 100) : 0;
   const laiRongColor = laiRong >= 0 ? '#2E7D32' : '#C62828';
   
-  const chiPhiKhaiTruong = tinhChiPhiKhaiTruong(PURCHASES, PACKAGING);
-  
   const html = `
     <div class="section-title">💰 DOANH THU</div>
     <div class="result-row">
-      <span class="label">Tiền cất đi (trong tháng)</span>
-      <span class="value">${fmt(tongDoanhThu)}</span>
+      <span class="label">Tiền cất đi (Tiền mặt)</span>
+      <span class="value">${fmt(tongTienCatDi)}</span>
     </div>
     <div class="result-row">
-      <span class="label">Chi phí hàng ngày</span>
+      <span class="label">Tiền chi hàng ngày (rau, bánh mì)</span>
       <span class="value">${fmt(tongChiPhiHangNgay)}</span>
     </div>
     <div class="result-row" style="border-top: 2px solid #FFC107; padding-top: 12px; margin-top: 4px;">
@@ -1428,13 +1438,13 @@ function showMonthSummary() {
       <span class="value"><b>${fmt(doanhThuThuc)}</b></span>
     </div>
     
-    <div class="section-title">💸 CHI PHÍ</div>
+    <div class="section-title">💸 CHI PHÍ THỰC TẾ</div>
     <div class="result-row">
-      <span class="label">Chi phí lấy hàng (phân bổ)</span>
+      <span class="label">Chi phí Cost (thịt, bơ, pate)</span>
       <span class="value">${fmt(chiPhiLayHang)}</span>
     </div>
     <div class="result-row">
-      <span class="label">Bao bì (phân bổ)</span>
+      <span class="label">Bao bì (500đ/bánh)</span>
       <span class="value">${fmt(baoBi)}</span>
     </div>
     <div class="result-row">
@@ -1442,8 +1452,8 @@ function showMonthSummary() {
       <span class="value">${fmt(tienDienNuoc)}</span>
     </div>
     <div class="result-row" style="border-top: 2px solid #FFC107; padding-top: 12px; margin-top: 4px;">
-      <span class="label"><b>Tổng chi phí</b></span>
-      <span class="value"><b>${fmt(chiPhiLayHang + baoBi + tienDienNuoc)}</b></span>
+      <span class="label"><b>Tổng chi phí thực tế</b></span>
+      <span class="value"><b>${fmt(tongChiPhiThucTe)}</b></span>
     </div>
     
     <div class="section-title">📈 LỢI NHUẬN RÒNG</div>
