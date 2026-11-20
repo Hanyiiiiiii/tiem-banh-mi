@@ -1663,12 +1663,35 @@ try {
 } catch (e) {}
 
 // ============ LỊCH SỬ NHẬP HÀNG ============
-// ============ LỊCH SỬ NHẬP HÀNG ============
+
+// 1. KHAI BÁO DANH MỤC LÊN TRÊN CÙNG
+const DANH_MUC_HANG = [
+  { ten: 'Bơ', donGia: 75000, donVi: 'kg' },
+  { ten: 'Patê', donGia: 82000, donVi: 'kg' },
+  { ten: 'Nem nướng', donGia: 95000, donVi: 'kg' },
+  { ten: 'Xúc xích tỏi cắt', donGia: 85000, donVi: 'kg' },
+  { ten: 'Giò thủ cắt', donGia: 85000, donVi: 'kg' },
+  { ten: 'Giò lụa cắt', donGia: 87000, donVi: 'kg' },
+  { ten: 'Da bao trắng cắt', donGia: 120000, donVi: 'kg' },
+  { ten: 'Ruốc xù ngọt', donGia: 135000, donVi: 'kg' },
+  { ten: 'Giò bò cắt', donGia: 90000, donVi: 'kg' },
+  { ten: 'Túi giấy đựng bánh mì', donGia: 0, donVi: 'cái' },
+  { ten: 'Khăn ướt', donGia: 0, donVi: 'cái' },
+  { ten: 'Túi nylon', donGia: 0, donVi: 'cân' },
+  { ten: 'Cốc', donGia: 0, donVi: 'lốc' },
+  { ten: 'Giấy rút', donGia: 0, donVi: 'thùng' },
+  { ten: 'Attiso', donGia: 0, donVi: 'lít' },
+  { ten: 'Dâu tằm', donGia: 0, donVi: 'lít' }
+];
+
+// 2. SAU ĐÓ MỚI KHAI BÁO CÁC BIẾN KHÁC
 let purchaseMonth = TODAY.getMonth();
 let purchaseYear = TODAY.getFullYear();
 let currentPurchaseKey = null;
 let currentPurchaseData = null;
 let purchaseEditMode = false;
+
+// ... (Các hàm openPurchaseModal, renderPurchaseCalendar giữ nguyên)
 
 // DANH MỤC MẶT HÀNG CÓ SẴN KÈM ĐƠN GIÁ VÀ ĐƠN VỊ TÍNH
 const DANH_MUC_HANG = [
