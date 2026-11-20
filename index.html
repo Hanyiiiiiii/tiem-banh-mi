@@ -970,6 +970,14 @@ const GIA_BANH_25 = 25000;
 const GIA_BANH_30 = 30000;
 const GIA_NUOC = 15000;
 
+// Giá Cost (nguyên vật liệu)
+const COST_BANH_KHONG = 2500;
+const COST_BANH_15 = 10768;
+const COST_BANH_20 = 13088;
+const COST_BANH_25 = 16356;
+const COST_BANH_30 = 16356;
+const COST_NUOC = 10000;
+
 function buildData() {
   for (const key in RAW_DATA) {
     const r = RAW_DATA[key];
@@ -1380,6 +1388,7 @@ function showMonthSummary() {
   let ngaySieuTot = 0, ngayTot = 0, ngayThuong = 0, ngayE = 0, soNgay = 0;
   let bestDay = null, worstDay = null;
   
+  // Lặp qua từng ngày để lấy số liệu
   for (let d = 1; d <= daysInMonth; d++) {
     const key = dateKey(currentYear, currentMonth, d);
     const r = data[key];
@@ -1398,27 +1407,17 @@ function showMonthSummary() {
     if (!worstDay || r.tongBanhBan < worstDay.sold) worstDay = { d, sold: r.tongBanhBan };
   }
   
-  // 1. Chi phí Cost (Nguyên vật liệu chính: thịt, bơ, pate...)
+  // 1. Lấy chi phí Cost tổng (Đã bao gồm nguyên liệu + bao bì + điện nước)
   const chiPhiLayHangTheoThang = tinhChiPhiLayHangTheoThang(null, data);
   const thangKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
   const chiPhiLayHang = chiPhiLayHangTheoThang[thangKey] || 0;
   
-  // 2. Chi phí Bao bì (500đ/cái)
-  const baoBiTheoThang = tinhBaoBiTheoThang(PACKAGING, data);
-  const baoBi = baoBiTheoThang[thangKey] || 0;
-  
-  // 3. Tiền điện nước
-  const tienDienNuoc = TIEN_DIEN_NUOC;
-  
-  // 4. TỔNG DOANH THU THỰC (Tiền khách trả)
-  // Bằng tiền cất đi + tiền đã chi ra để mua rau, bánh mì hàng ngày
+  // 2. TỔNG DOANH THU THỰC
+  // Doanh thu thực = Tiền cất đi (Tiền mặt) + Tiền đã chi ra để mua rau, bánh mì hàng ngày
   const doanhThuThuc = tongTienCatDi + tongChiPhiHangNgay;
   
-  // 5. TỔNG CHI PHÍ THỰC TẾ (Cost + Bao bì + Điện nước)
-  const tongChiPhiThucTe = chiPhiLayHang + baoBi + tienDienNuoc;
-  
-  // 6. LÃI RÒNG
-  const laiRong = doanhThuThuc - tongChiPhiThucTe;
+  // 3. LÃI RÒNG
+  const laiRong = doanhThuThuc - chiPhiLayHang;
   
   const tyLeLai = doanhThuThuc > 0 ? (laiRong / doanhThuThuc * 100) : 0;
   const laiRongColor = laiRong >= 0 ? '#2E7D32' : '#C62828';
@@ -1440,20 +1439,12 @@ function showMonthSummary() {
     
     <div class="section-title">💸 CHI PHÍ THỰC TẾ</div>
     <div class="result-row">
-      <span class="label">Chi phí Cost (thịt, bơ, pate)</span>
+      <span class="label">Chi phí Cost (thịt, bơ, pate...)</span>
       <span class="value">${fmt(chiPhiLayHang)}</span>
-    </div>
-    <div class="result-row">
-      <span class="label">Bao bì (500đ/bánh)</span>
-      <span class="value">${fmt(baoBi)}</span>
-    </div>
-    <div class="result-row">
-      <span class="label">Tiền điện nước</span>
-      <span class="value">${fmt(tienDienNuoc)}</span>
     </div>
     <div class="result-row" style="border-top: 2px solid #FFC107; padding-top: 12px; margin-top: 4px;">
       <span class="label"><b>Tổng chi phí thực tế</b></span>
-      <span class="value"><b>${fmt(tongChiPhiThucTe)}</b></span>
+      <span class="value"><b>${fmt(chiPhiLayHang)}</b></span>
     </div>
     
     <div class="section-title">📈 LỢI NHUẬN RÒNG</div>
@@ -1649,6 +1640,19 @@ let currentPurchaseKey = null;
 let currentPurchaseData = null;
 let purchaseEditMode = false;
 
+// DANH MỤC MẶT HÀNG CÓ SẴN KÈM ĐƠN GIÁ (Lấy từ bảng Excel của bạn)
+const DANH_MUC_HANG = [
+  { ten: 'Bơ', donGia: 75000 },
+  { ten: 'Patê', donGia: 82000 },
+  { ten: 'Nem nướng', donGia: 95000 },
+  { ten: 'Xúc xích tỏi cắt', donGia: 85000 },
+  { ten: 'Giò thủ cắt', donGia: 85000 },
+  { ten: 'Giò lụa cắt', donGia: 87000 },
+  { ten: 'Da bao trắng cắt', donGia: 120000 },
+  { ten: 'Ruốc xù ngọt', donGia: 135000 },
+  { ten: 'Giò bò cắt', donGia: 90000 }
+];
+
 async function openPurchaseModal() {
   if (typeof loadPurchasesFromFirebase === 'function' && firebaseReady && !purchasesLoaded) {
     const fbData = await loadPurchasesFromFirebase();
@@ -1733,9 +1737,14 @@ async function openPurchaseDayModal(key) {
     currentPurchaseData = JSON.parse(JSON.stringify(dataPurchase));
     renderPurchaseDayView();
   } else {
+    // Mặc định khi tạo mới: Điền sẵn danh sách mặt hàng
     currentPurchaseData = {
       ngay: key,
-      matHang: [{ ten: 'Bơ', soLuong: 0, donGia: 75000 }],
+      matHang: DANH_MUC_HANG.map(item => ({
+        ten: item.ten,
+        soLuong: 0,
+        donGia: item.donGia
+      })),
       ship: 0,
       ghiChu: ''
     };
@@ -1792,9 +1801,8 @@ function renderPurchaseDayForm() {
       <button class="btn-secondary" onclick="uploadHoaDon()" style="background: #E3F2FD; border-color: #1976D2; color: #1976D2; font-size: 14px;">📷 Upload hóa đơn (OCR)</button>
       <input type="file" id="hoaDonInput" accept="image/*" style="display: none;" onchange="handleHoaDonUpload(event)">
     </div>
-    <div class="section-title">📥 MẶT HÀNG</div>
+    <div class="section-title">📥 MẶT HÀNG (Chỉ cần nhập số kg)</div>
     <div id="purchaseMatHangList"></div>
-    <button class="btn-add-item" onclick="addPurchaseMatHang()">+ Thêm mặt hàng</button>
     
     <div class="row" style="margin-top: 12px;">
       <label>Ship</label>
@@ -1824,43 +1832,29 @@ function renderPurchaseDayForm() {
 function renderPurchaseMatHang() {
   const list = document.getElementById('purchaseMatHangList');
   list.innerHTML = '';
-  (currentPurchaseData.matHang || []).forEach((item, idx) => {
+  
+  currentPurchaseData.matHang.forEach((item, idx) => {
     const row = document.createElement('div');
     row.className = 'item-row';
-    row.style.flexWrap = 'wrap';
+    row.style.flexWrap = 'nowrap'; // Giữ trên 1 dòng
+    row.style.alignItems = 'center';
+    row.style.padding = '4px 0';
+    
+    // Giao diện dòng: Tên (cố định) - Số kg (nhập) - Đơn giá (cố định)
     row.innerHTML = `
-      <input type="text" class="name" value="${item.ten || ''}" placeholder="Tên món" style="flex: 1 1 100%; margin-bottom: 4px;">
-      <input type="number" class="num" value="${item.soLuong || 0}" placeholder="SL" style="flex: 1 1 25%;" inputmode="numeric">
-      <input type="number" class="num" value="${item.donGia || 0}" placeholder="Đơn giá" style="flex: 1 1 40%;" inputmode="numeric">
-      <button class="remove" onclick="removePurchaseMatHang(${idx})" style="flex: 0 0 32px;">✕</button>
+      <div style="flex: 1 1 40%; font-size: 14px; font-weight: 600; color: #333;">${item.ten}</div>
+      <input type="number" class="num" value="${item.soLuong || 0}" placeholder="Số kg" style="flex: 1 1 25%; text-align: right; margin-right: 4px;" inputmode="numeric">
+      <div style="flex: 0 0 70px; font-size: 12px; color: #888; text-align: right;">${(item.donGia || 0).toLocaleString('vi-VN')}</div>
     `;
-    row.querySelectorAll('input')[0].addEventListener('input', (e) => {
-      currentPurchaseData.matHang[idx].ten = e.target.value;
-      recalcPurchase();
-    });
-    row.querySelectorAll('input')[1].addEventListener('input', (e) => {
+    
+    // Chỉ cho phép nhập Số kg
+    row.querySelector('input').addEventListener('input', (e) => {
       currentPurchaseData.matHang[idx].soLuong = +e.target.value || 0;
       recalcPurchase();
     });
-    row.querySelectorAll('input')[2].addEventListener('input', (e) => {
-      currentPurchaseData.matHang[idx].donGia = +e.target.value || 0;
-      recalcPurchase();
-    });
+    
     list.appendChild(row);
   });
-}
-
-function addPurchaseMatHang() {
-  if (!currentPurchaseData.matHang) currentPurchaseData.matHang = [];
-  currentPurchaseData.matHang.push({ ten: '', soLuong: 0, donGia: 0 });
-  renderPurchaseMatHang();
-  recalcPurchase();
-}
-
-function removePurchaseMatHang(idx) {
-  currentPurchaseData.matHang.splice(idx, 1);
-  renderPurchaseMatHang();
-  recalcPurchase();
 }
 
 function recalcPurchase() {
@@ -1893,10 +1887,11 @@ function cancelPurchaseEdit() {
 async function savePurchase() {
   recalcPurchase();
   
-  currentPurchaseData.matHang = (currentPurchaseData.matHang || []).filter(m => m.ten && m.ten.trim());
+  // Lọc bỏ các món không có tên
+  currentPurchaseData.matHang = (currentPurchaseData.matHang || []).filter(m => m.ten && m.ten.trim() !== '');
   
   if (currentPurchaseData.matHang.length === 0) {
-    alert('Vui lòng nhập ít nhất 1 mặt hàng');
+    alert('Vui lòng chọn ít nhất 1 mặt hàng');
     return;
   }
   
