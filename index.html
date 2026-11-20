@@ -1379,7 +1379,7 @@ async function closeDayModal() {
   isEditMode = false;
 }
 
-// ============ TỔNG KẾT THÁNG ============
+// ============ TỔNG KẾT THÁNG ============// ============ TỔNG KẾT THÁNG ============
 function showMonthSummary() {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   let tongTienCatDi = 0; 
@@ -1388,6 +1388,14 @@ function showMonthSummary() {
   let ngaySieuTot = 0, ngayTot = 0, ngayThuong = 0, ngayE = 0, soNgay = 0;
   let bestDay = null, worstDay = null;
   
+  // Biến đếm số lượng từng loại bánh
+  let tongBanhKhong = 0;
+  let tongBanh15 = 0;
+  let tongBanh20 = 0;
+  let tongBanh25 = 0;
+  let tongBanh30 = 0;
+  let tongNuoc = 0;
+
   // Lặp qua từng ngày để lấy số liệu
   for (let d = 1; d <= daysInMonth; d++) {
     const key = dateKey(currentYear, currentMonth, d);
@@ -1397,6 +1405,14 @@ function showMonthSummary() {
     tongTienCatDi += r.tienCat || 0;
     tongBanh += r.tongBanhBan || 0;
     tongChiPhiHangNgay += r.tongChiPhi || 0;
+    
+    // Cộng dồn số lượng từng loại
+    tongBanhKhong += r.banhKhong || 0;
+    tongBanh15 += r.banh15 || 0;
+    tongBanh20 += r.banh20 || 0;
+    tongBanh25 += r.banh25 || 0;
+    tongBanh30 += r.banh30 || 0;
+    tongNuoc += r.nuoc || 0;
     
     if (r.tongBanhBan >= 50) ngaySieuTot++;
     else if (r.tongBanhBan >= 28) ngayTot++;
@@ -1413,7 +1429,6 @@ function showMonthSummary() {
   const chiPhiLayHang = chiPhiLayHangTheoThang[thangKey] || 0;
   
   // 2. TỔNG DOANH THU THỰC
-  // Doanh thu thực = Tiền cất đi (Tiền mặt) + Tiền đã chi ra để mua rau, bánh mì hàng ngày
   const doanhThuThuc = tongTienCatDi + tongChiPhiHangNgay;
   
   // 3. LÃI RÒNG
@@ -1422,6 +1437,9 @@ function showMonthSummary() {
   const tyLeLai = doanhThuThuc > 0 ? (laiRong / doanhThuThuc * 100) : 0;
   const laiRongColor = laiRong >= 0 ? '#2E7D32' : '#C62828';
   
+  // Hàm tính % cho từng loại
+  const pt = (soLuong) => tongBanh > 0 ? (soLuong / tongBanh * 100).toFixed(1) : '0.0';
+
   const html = `
     <div class="section-title">💰 DOANH THU</div>
     <div class="result-row">
@@ -1456,10 +1474,21 @@ function showMonthSummary() {
       <span class="label" style="font-size: 13px; color: #888;">Tỷ lệ lãi ròng</span>
       <span class="value" style="font-size: 14px; color: ${laiRongColor};">${tyLeLai.toFixed(1)}%</span>
     </div>
+
+    <div class="section-title">🥖 CHI TIẾT BÁN RA</div>
+    <div class="result-row"><span class="label">Bánh mì không (4k)</span><span class="value">${tongBanhKhong} cái (${pt(tongBanhKhong)}%)</span></div>
+    <div class="result-row"><span class="label">Bánh mì 15k</span><span class="value">${tongBanh15} cái (${pt(tongBanh15)}%)</span></div>
+    <div class="result-row"><span class="label">Bánh mì 20k</span><span class="value">${tongBanh20} cái (${pt(tongBanh20)}%)</span></div>
+    <div class="result-row"><span class="label">Bánh mì 25k</span><span class="value">${tongBanh25} cái (${pt(tongBanh25)}%)</span></div>
+    <div class="result-row"><span class="label">Bánh mì 30k</span><span class="value">${tongBanh30} cái (${pt(tongBanh30)}%)</span></div>
+    <div class="result-row"><span class="label">Nước (15k)</span><span class="value">${tongNuoc} cốc</span></div>
+    <div class="result-row" style="border-top: 1px dashed #ccc; margin-top: 4px; padding-top: 8px;">
+      <span class="label"><b>Tổng bánh</b></span>
+      <span class="value"><b>${tongBanh} cái</b></span>
+    </div>
     
-    <div class="section-title">📅 CHI TIẾT</div>
+    <div class="section-title">📅 THỐNG KÊ NGÀY</div>
     <div class="result-row"><span class="label">Số ngày có dữ liệu</span><span class="value">${soNgay} ngày</span></div>
-    <div class="result-row"><span class="label">Tổng bánh bán</span><span class="value">${tongBanh} cái</span></div>
     <div class="result-row"><span class="label">Trung bình bán/ngày</span><span class="value">${soNgay ? Math.round(tongBanh/soNgay) : 0} cái</span></div>
     <div class="result-row"><span class="label">🔵 Ngày siêu tốt (≥50)</span><span class="value">${ngaySieuTot} ngày</span></div>
     <div class="result-row"><span class="label">🟢 Ngày tốt (28-49)</span><span class="value">${ngayTot} ngày</span></div>
